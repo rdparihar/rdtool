@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <section class="section">
+    <div class="container">
+      <h1 class="title has-text-centered">Calculator</h1>
+      <div class="columns is-centered">
+        <div class="column is-4-desktop is-6-tablet is-10-mobile">
+          <div class="level mb-2">
+            <div class="level-left buttons has-addons">
+              <button id="modeToggle" class="button is-small is-link is-light" aria-pressed="false" aria-expanded="false" aria-controls="advancedPanel" aria-label="Toggle advanced calculator functions">Advanced: Off</button>
+              <button id="converterToggle" class="button is-small is-success is-light" aria-pressed="false" aria-expanded="false" aria-controls="converterPanel" aria-label="Toggle unit converter">Converter: Off</button>
+              <button id="dateToggle" class="button is-small is-warning is-light" aria-pressed="false" aria-expanded="false" aria-controls="datePanel" aria-label="Toggle date calculator">Date: Off</button>
+            </div>
+            <div class="level-right">
+              <span class="tag is-light is-info is-rounded is-hidden" id="memoryIndicator">M</span>
+            </div>
+          </div>
+          <div class="box calc-wrapper" id="calcWrapper" data-mode="basic">
+            <div class="field mb-3">
+              <div class="control">
+                <input id="display" class="input is-large has-text-right" type="text" placeholder="0" readonly />
+              </div>
+            </div>
+            <!-- Advanced Panel -->
+            <div class="adv-grid" id="advancedPanel" hidden>
+              <button data-fn="sin" class="button is-light">sin</button>
+              <button data-fn="cos" class="button is-light">cos</button>
+              <button data-fn="tan" class="button is-light">tan</button>
+              <button data-fn="sqrt" class="button is-light">√</button>
+              <button data-fn="square" class="button is-light">x²</button>
+              <button data-fn="pow" class="button is-light">xʸ</button>
+              <button data-fn="inv" class="button is-light">1/x</button>
+              <button data-fn="log" class="button is-light">log</button>
+              <button data-fn="ln" class="button is-light">ln</button>
+              <button data-fn="pi" class="button is-light">π</button>
+              <button data-fn="e" class="button is-light">e</button>
+              <button data-fn="ce" class="button is-danger is-light">CE</button>
+              <button data-fn="mc" class="button is-warning is-light">MC</button>
+              <button data-fn="mr" class="button is-warning is-light">MR</button>
+              <button data-fn="m+" class="button is-warning is-light">M+</button>
+              <button data-fn="m-" class="button is-warning is-light">M-</button>
+            </div>
+            <div class="buttons-grid">
+              <!-- Row 1 -->
+              <button data-action="clear" class="button is-danger is-light">C</button>
+              <button data-action="sign" class="button is-info is-light">±</button>
+              <button data-action="percent" class="button is-info is-light">%</button>
+              <button data-value="/" class="button is-warning">÷</button>
+              <!-- Row 2 -->
+              <button data-value="7" class="button">7</button>
+              <button data-value="8" class="button">8</button>
+              <button data-value="9" class="button">9</button>
+              <button data-value="*" class="button is-warning">×</button>
+              <!-- Row 3 -->
+              <button data-value="4" class="button">4</button>
+              <button data-value="5" class="button">5</button>
+              <button data-value="6" class="button">6</button>
+              <button data-value="-" class="button is-warning">−</button>
+              <!-- Row 4 -->
+              <button data-value="1" class="button">1</button>
+              <button data-value="2" class="button">2</button>
+              <button data-value="3" class="button">3</button>
+              <button data-value="+" class="button is-warning">+</button>
+              <!-- Row 5 -->
+              <button data-value="0" class="button is-fullwidth zero">0</button>
+              <button data-value="." class="button">.</button>
+              <button data-action="equals" class="button is-primary">=</button>
+            </div>
+            <!-- Converter Panel -->
+            <div id="converterPanel" class="converter-panel mt-4" hidden>
+              <h2 class="is-size-6 has-text-weight-semibold mb-2">Unit Converter</h2>
+              <div class="field is-horizontal">
+                <div class="field-body">
+                  <div class="field">
+                    <label class="label is-small" for="convCategory">Category</label>
+                    <div class="control">
+                      <div class="select is-small is-fullwidth">
+                        <select id="convCategory" aria-label="Conversion category">
+                          <option value="length">Length</option>
+                          <option value="weight">Weight</option>
+                          <option value="temperature">Temperature</option>
+                          <option value="currency">Currency</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label class="label is-small" for="convInput">Value</label>
+                    <div class="control">
+                      <input id="convInput" class="input is-small" type="number" step="any" value="1" />
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label class="label is-small" for="convFrom">From</label>
+                    <div class="control">
+                      <div class="select is-small is-fullwidth">
+                        <select id="convFrom" aria-label="From unit"></select>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="field has-addons converter-swap-wrapper">
+                    <div class="control">
+                      <button id="convSwap" class="button is-small" type="button" aria-label="Swap units">⇄</button>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label class="label is-small" for="convTo">To</label>
+                    <div class="control">
+                      <div class="select is-small is-fullwidth">
+                        <select id="convTo" aria-label="To unit"></select>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label class="label is-small" for="convResult">Result</label>
+                    <div class="control">
+                      <input id="convResult" class="input is-small" type="text" readonly />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <p class="help is-size-7" id="convFormulaHelp"></p>
+            </div>
+            <!-- Date / Calendar Panel -->
+            <div id="datePanel" class="date-panel mt-4" hidden>
+              <h2 class="is-size-6 has-text-weight-semibold mb-2">Date Calculator</h2>
+              <div class="columns is-multiline is-mobile">
+                <div class="column is-6">
+                  <label class="label is-small" for="dateStart">Start Date</label>
+                  <input id="dateStart" type="date" class="input is-small" />
+                </div>
+                <div class="column is-6">
+                  <label class="label is-small" for="dateEnd">End Date</label>
+                  <input id="dateEnd" type="date" class="input is-small" />
+                </div>
+                <div class="column is-12">
+                  <p class="is-size-7 mb-1 has-text-grey">Difference</p>
+                  <div id="dateDiffResult" class="box py-2 px-3 is-size-7 has-background-light" style="min-height:3rem;">
+                    <em class="has-text-grey">Select start & end dates</em>
+                  </div>
+                </div>
+                <div class="column is-12">
+                  <hr class="my-3" />
+                </div>
+                <div class="column is-6">
+                  <label class="label is-small" for="dateBase">Base Date</label>
+                  <input id="dateBase" type="date" class="input is-small" />
+                </div>
+                <div class="column is-3">
+                  <label class="label is-small" for="dateOffset">+ / -</label>
+                  <input id="dateOffset" type="number" class="input is-small" value="0" step="1" />
+                </div>
+                <div class="column is-3">
+                  <label class="label is-small" for="dateOffsetUnit">Unit</label>
+                  <div class="select is-small is-fullwidth">
+                    <select id="dateOffsetUnit">
+                      <option value="days">Days</option>
+                      <option value="weeks">Weeks</option>
+                      <option value="months">Months</option>
+                      <option value="years">Years</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="column is-12">
+                  <p class="is-size-7 mb-1 has-text-grey">Date Arithmetic</p>
+                  <div id="dateAddResult" class="box py-2 px-3 is-size-7 has-background-light" style="min-height:2.4rem;">
+                    <em class="has-text-grey">Adjust base date</em>
+                  </div>
+                </div>
+              </div>
+              <p class="help is-size-7" id="dateHelpText">Business days exclude weekends. Months/years differences are calendar-based.</p>
+            </div>
+          </div>
+          <p class="has-text-centered is-size-7 has-text-grey mt-4"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <script src="script.js"></script>
+</body>
+</html>
