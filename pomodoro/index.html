@@ -45,7 +45,7 @@
 
     .app {
       display: grid;
-      /* grid-template-columns: 1fr 1.2fr; */
+      grid-template-columns: 1fr 1.5fr;
       gap: 32px;
       max-width: 1100px;
       width: 100%;
@@ -75,6 +75,7 @@
 
     .panel {
       display: grid;
+      margin-top: 20px;
       gap: 18px;
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
@@ -397,9 +398,9 @@
           <button class="btn" id="saveSettings">Save</button>
         </div>
       </div>
-    </section>
-
-    <section class="panel">
+    
+    
+        <section class="panel">
 
 
       <div class="card mini-card">
@@ -432,6 +433,10 @@
         <div class="status">Minutes</div>
       </div>
     </section>
+    
+    </section>
+
+
   </main>
 
   <script>
