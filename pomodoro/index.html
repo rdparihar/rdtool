@@ -24,6 +24,34 @@
       --radius: 28px;
     }
 
+    body[data-theme="ember"] {
+      --bg-1: #f7f4f1;
+      --bg-2: #efe8e2;
+      --card: #0c0c0f;
+      --card-soft: #141418;
+      --ring-track: #2a2a2e;
+      --ring-hot: #ff4d2d;
+      --ring-warm: #ff8a3d;
+      --ring-cool: #ffcf6b;
+      --muted: #8b8b93;
+      --text: #f4f4f6;
+      --accent: #ff4d2d;
+    }
+
+    body[data-theme="mint"] {
+      --bg-1: #eef4f1;
+      --bg-2: #e1efe9;
+      --card: #0a1110;
+      --card-soft: #131b1a;
+      --ring-track: #24302e;
+      --ring-hot: #38d39f;
+      --ring-warm: #5dd9f7;
+      --ring-cool: #a6f7e6;
+      --muted: #7f9891;
+      --text: #f2f6f5;
+      --accent: #38d39f;
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -33,14 +61,20 @@
 
     body {
       min-height: 100vh;
-      background: radial-gradient(circle at 15% 30%, #ffd0c4 0%, transparent 42%),
-        radial-gradient(circle at 20% 70%, #ffc1b2 0%, transparent 48%),
+      background: radial-gradient(circle at 15% 30%, rgba(255, 208, 196, 0.9) 0%, transparent 42%),
+        radial-gradient(circle at 20% 70%, rgba(255, 193, 178, 0.8) 0%, transparent 48%),
         linear-gradient(160deg, var(--bg-1), var(--bg-2));
       color: var(--text);
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 32px;
+    }
+
+    body[data-theme="mint"] {
+      background: radial-gradient(circle at 18% 28%, rgba(142, 241, 214, 0.55) 0%, transparent 45%),
+        radial-gradient(circle at 22% 70%, rgba(99, 214, 255, 0.35) 0%, transparent 50%),
+        linear-gradient(160deg, var(--bg-1), var(--bg-2));
     }
 
     .app {
@@ -55,11 +89,12 @@
       background: radial-gradient(circle at 30% 30%, rgba(255, 122, 64, 0.85), transparent 65%),
         linear-gradient(160deg, #0c0c10, #1a0f0d 60%, #0a0a0d);
       border-radius: 36px;
-      padding: 36px;
+      padding: 28px;
       box-shadow: var(--shadow);
-      /* min-height: 320px; */
-      display: flex;
-      align-items: flex-end;
+      display: grid;
+      gap: 5px;
+      grid-template-rows: 1fr auto;
+      min-height: 440px;
     }
 
     .hero h1 {
@@ -73,10 +108,33 @@
       font-weight: 700;
     }
 
+    .hero-header {
+      display: grid;
+      gap: 10px;
+      align-content: end;
+      margin-top: auto;
+    }
+
+    .hero .todo-card {
+      background: rgba(12, 12, 15, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: none;
+      padding: 16px;
+      border-radius: 22px;
+      margin-bottom: 5px;
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      height: 100%;
+    }
+
+    .hero .todo-list {
+      max-height: 140px;
+    }
+
     .panel {
       display: grid;
-      margin-top: 20px;
-      gap: 18px;
+      margin-top: 6px;
+      gap: 16px;
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 
@@ -94,13 +152,14 @@
       display: grid;
       place-items: center;
       gap: 12px;
+      min-height: 310px;
     }
 
     .timer-wrap {
       width: 100%;
       display: grid;
       place-items: center;
-      gap: 10px;
+      gap: 12px;
     }
 
     .ring {
@@ -115,6 +174,11 @@
       transform: rotate(-90deg);
     }
 
+    #progressRing {
+      transition: stroke-dashoffset 1s linear;
+      filter: drop-shadow(0 0 8px rgba(255, 122, 64, 0.35));
+    }
+
     .ring .time {
       position: absolute;
       inset: 0;
@@ -122,6 +186,35 @@
       place-items: center;
       text-align: center;
       gap: 6px;
+    }
+
+    .mode-tabs {
+      display: inline-flex;
+      gap: 6px;
+      padding: 6px;
+      background: #1b1b21;
+      border-radius: 999px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 6px;
+    }
+
+    .mode-tab {
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      padding: 4px 10px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .mode-tab.active {
+      background: #2b2b33;
+      color: var(--text);
     }
 
     .time .mode {
@@ -198,6 +291,156 @@
       gap: 14px;
       align-content: center;
       text-align: center;
+      min-height: 140px;
+    }
+
+    .todo-card {
+      display: grid;
+      gap: 14px;
+      min-height: 140px;
+    }
+
+    .todo-card h3 {
+      font-weight: 500;
+      color: var(--muted);
+    }
+
+    .todo-input {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+    }
+
+    .todo-input input {
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #2b2b30;
+      background: #121216;
+      color: var(--text);
+    }
+
+    .todo-input button {
+      border-radius: 999px;
+      border: none;
+      padding: 8px 16px;
+      background: #2d2d33;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .todo-list {
+      display: grid;
+      gap: 8px;
+      overflow-y: auto;
+      padding-right: 6px;
+      min-height: 0;
+    }
+
+    .todo-list::-webkit-scrollbar,
+    .settings::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .todo-list::-webkit-scrollbar-track,
+    .settings::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .todo-list::-webkit-scrollbar-thumb,
+    .settings::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.18);
+      border-radius: 999px;
+    }
+
+    .todo-list,
+    .settings {
+      scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+      scrollbar-width: thin;
+    }
+
+    .todo-item {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: #141418;
+      font-size: 13px;
+    }
+
+    .todo-item input[type="checkbox"] {
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 6px;
+      border: 1px solid #2b2b30;
+      background: #101015;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+    }
+
+    .todo-item input[type="checkbox"]::after {
+      content: "";
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      background: var(--accent);
+      transform: scale(0);
+      transition: transform 0.15s ease;
+    }
+
+    .todo-item input[type="checkbox"]:checked::after {
+      transform: scale(1);
+    }
+
+    .todo-item.done .todo-text {
+      text-decoration: line-through;
+      color: var(--muted);
+    }
+
+    .todo-item button {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .toast-container {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      display: grid;
+      gap: 10px;
+      z-index: 999;
+    }
+
+    .toast {
+      background: rgba(18, 18, 22, 0.92);
+      color: var(--text);
+      padding: 12px 16px;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      animation: toastIn 0.3s ease;
+    }
+
+    @keyframes toastIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .mini-card h3 {
@@ -236,6 +479,7 @@
       padding: 24px;
       border-radius: var(--radius);
       backdrop-filter: blur(8px);
+      overflow-y: auto;
     }
 
     .settings.active {
@@ -262,15 +506,30 @@
       letter-spacing: 0.14em;
     }
 
-    .settings .pill span {
+    .settings .pill .pill-tab {
       padding: 6px 12px;
       border-radius: 999px;
       color: var(--muted);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
     }
 
-    .settings .pill span.active {
+    .settings .pill .pill-tab.active {
       background: #2b2b33;
       color: var(--text);
+    }
+
+    .settings-panel {
+      display: none;
+      gap: 14px;
+    }
+
+    .settings-panel.active {
+      display: grid;
     }
 
     .setting-row {
@@ -294,8 +553,18 @@
       color: var(--text);
       text-align: center;
     }
+
+    .setting-row select {
+      width: 140px;
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1px solid #2b2b30;
+      background: #121216;
+      color: var(--text);
+    }
     .timer{
-        min-height: 320px;
+      display: grid;
+      gap: 24px;
     }
 
     .status {
@@ -313,6 +582,14 @@
       margin-top: 6px;
       color: var(--muted);
       font-size: 12px;
+    }
+
+    .stats {
+      margin-top: -2px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
     }
 
     @media (max-width: 960px) {
@@ -333,12 +610,27 @@
 <body>
   <main class="app">
     <section class="hero">
-      <h1>Pomodoro<br /><span>Timer</span></h1>
+      <div class="card todo-card">
+        <h3>Todo List</h3>
+        <div class="todo-input">
+          <input id="todoInput" type="text" placeholder="Add a task" />
+          <button id="addTodoBtn" type="button">Add</button>
+        </div>
+        <div class="todo-list" id="todoList"></div>
+      </div>
+      <div class="hero-header">
+        <h1>Pomodoro<br /><span>Timer</span></h1>
+      </div>
     </section>
 
     <section class="timer">
       <div class="card round">
         <div class="timer-wrap">
+          <div class="mode-tabs" role="tablist">
+            <button class="mode-tab active" type="button" data-mode="focus">Focus</button>
+            <button class="mode-tab" type="button" data-mode="shortBreak">Short</button>
+            <button class="mode-tab" type="button" data-mode="longBreak">Long</button>
+          </div>
           <div class="ring">
             <svg viewBox="0 0 120 120">
               <defs>
@@ -352,18 +644,17 @@
               <circle id="progressRing" cx="60" cy="60" r="52" fill="none" stroke="url(#ringGradient)" stroke-width="6" stroke-linecap="round" stroke-dasharray="327" stroke-dashoffset="0" />
             </svg>
             <div class="time">
-              <div class="status" id="statusLabel">Focus</div>
               <div class="clock" id="timeDisplay">25:00</div>
-              <div class="dots" id="sessionDots"></div>
-              <div class="mode" id="modeLabel">Focus</div>
             </div>
           </div>
+          <div class="mode" id="modeLabel">FOCUS</div>
           <div class="controls">
             <button class="icon-btn" id="resetBtn" title="Reset">&#8634;</button>
             <button class="btn" id="toggleBtn">Start</button>
             <button class="icon-btn" id="settingsBtn" title="Settings">&#9881;</button>
           </div>
           <div class="footer" id="cycleLabel">Session 1 of 4</div>
+          <div class="stats" id="statsLabel">Today: 0 focus</div>
         </div>
 
         <div class="settings" id="settingsPanel">
@@ -371,29 +662,48 @@
             <span>Settings</span>
             <button class="icon-btn" id="closeSettings" title="Close">&#10005;</button>
           </header>
-          <div class="pill">
-            <span class="active">Duration</span>
-            <span>Notifications</span>
+          <div class="pill" role="tablist">
+            <button class="pill-tab active" id="durationTab" type="button" data-panel="duration">Duration</button>
+            <button class="pill-tab" id="notificationsTab" type="button" data-panel="notifications">Notifications</button>
           </div>
-          <div class="setting-row">
-            <label for="focusInput">Focus Session</label>
-            <input id="focusInput" type="number" min="5" max="90" step="1" value="25" />
+          <div class="settings-panel active" id="durationPanel" data-panel="duration">
+            <div class="setting-row">
+              <label for="focusInput">Focus Session</label>
+              <input id="focusInput" type="number" min="5" max="90" step="1" value="25" />
+            </div>
+            <div class="setting-row">
+              <label for="shortInput">Short Break</label>
+              <input id="shortInput" type="number" min="1" max="30" step="1" value="5" />
+            </div>
+            <div class="setting-row">
+              <label for="longInput">Long Break</label>
+              <input id="longInput" type="number" min="5" max="60" step="1" value="15" />
+            </div>
+            <div class="setting-row">
+              <label for="cycleInput">Long Break After</label>
+              <input id="cycleInput" type="number" min="2" max="8" step="1" value="4" />
+            </div>
+            <div class="setting-row">
+              <label for="themeSelect">Theme</label>
+              <select id="themeSelect">
+                <option value="ember">Ember</option>
+                <option value="mint">Mint</option>
+              </select>
+            </div>
+            <div class="setting-row">
+              <label for="soundToggle">Sound</label>
+              <input id="soundToggle" type="checkbox" />
+            </div>
           </div>
-          <div class="setting-row">
-            <label for="shortInput">Short Break</label>
-            <input id="shortInput" type="number" min="1" max="30" step="1" value="5" />
-          </div>
-          <div class="setting-row">
-            <label for="longInput">Long Break</label>
-            <input id="longInput" type="number" min="5" max="60" step="1" value="15" />
-          </div>
-          <div class="setting-row">
-            <label for="cycleInput">Long Break After</label>
-            <input id="cycleInput" type="number" min="2" max="8" step="1" value="4" />
-          </div>
-          <div class="setting-row">
-            <label for="soundToggle">Sound</label>
-            <input id="soundToggle" type="checkbox" />
+          <div class="settings-panel" id="notificationsPanel" data-panel="notifications">
+            <div class="setting-row">
+              <label for="notifyToggle">Desktop Alerts</label>
+              <input id="notifyToggle" type="checkbox" />
+            </div>
+            <div class="setting-row">
+              <label for="autoStartToggle">Auto-start next</label>
+              <input id="autoStartToggle" type="checkbox" />
+            </div>
           </div>
           <button class="btn" id="saveSettings">Save</button>
         </div>
@@ -401,8 +711,6 @@
     
     
         <section class="panel">
-
-
       <div class="card mini-card">
         <h3>Focus Session</h3>
         <div class="counter">
@@ -432,12 +740,12 @@
         </div>
         <div class="status">Minutes</div>
       </div>
-    </section>
-    
-    </section>
 
-
+    </section>
+    </section>
   </main>
+
+  <div class="toast-container" id="toastContainer"></div>
 
   <script>
     const defaults = {
@@ -445,7 +753,10 @@
       shortBreak: 5,
       longBreak: 15,
       longBreakAfter: 4,
-      sound: false
+      theme: "ember",
+      sound: false,
+      notify: false,
+      autoStart: false
     };
 
     const state = {
@@ -460,7 +771,6 @@
     const elements = {
       timeDisplay: document.getElementById("timeDisplay"),
       modeLabel: document.getElementById("modeLabel"),
-      statusLabel: document.getElementById("statusLabel"),
       toggleBtn: document.getElementById("toggleBtn"),
       resetBtn: document.getElementById("resetBtn"),
       settingsBtn: document.getElementById("settingsBtn"),
@@ -471,10 +781,17 @@
       shortInput: document.getElementById("shortInput"),
       longInput: document.getElementById("longInput"),
       cycleInput: document.getElementById("cycleInput"),
+      themeSelect: document.getElementById("themeSelect"),
       soundToggle: document.getElementById("soundToggle"),
+      notifyToggle: document.getElementById("notifyToggle"),
+      autoStartToggle: document.getElementById("autoStartToggle"),
       progressRing: document.getElementById("progressRing"),
-      sessionDots: document.getElementById("sessionDots"),
       cycleLabel: document.getElementById("cycleLabel"),
+      statsLabel: document.getElementById("statsLabel"),
+      toastContainer: document.getElementById("toastContainer"),
+      todoInput: document.getElementById("todoInput"),
+      addTodoBtn: document.getElementById("addTodoBtn"),
+      todoList: document.getElementById("todoList"),
       focusMinutes: document.getElementById("focusMinutes"),
       shortMinutes: document.getElementById("shortMinutes"),
       longMinutes: document.getElementById("longMinutes")
@@ -496,10 +813,15 @@
       elements.shortInput.value = settings.shortBreak;
       elements.longInput.value = settings.longBreak;
       elements.cycleInput.value = settings.longBreakAfter;
+      elements.themeSelect.value = settings.theme || "ember";
       elements.soundToggle.checked = settings.sound;
+      elements.notifyToggle.checked = settings.notify;
+      elements.autoStartToggle.checked = settings.autoStart;
       elements.focusMinutes.textContent = settings.focus;
       elements.shortMinutes.textContent = settings.shortBreak;
       elements.longMinutes.textContent = settings.longBreak;
+      applyTheme(elements.themeSelect.value);
+      updateStatsLabel();
       return settings;
     }
 
@@ -511,9 +833,14 @@
         shortBreak: clampNumber(parseInt(elements.shortInput.value, 10), 1, 30),
         longBreak: clampNumber(parseInt(elements.longInput.value, 10), 5, 60),
         longBreakAfter: clampNumber(parseInt(elements.cycleInput.value, 10), 2, 8),
-        sound: elements.soundToggle.checked
+        theme: elements.themeSelect.value || "ember",
+        sound: elements.soundToggle.checked,
+        notify: elements.notifyToggle.checked,
+        autoStart: elements.autoStartToggle.checked
       };
       localStorage.setItem("pomodoroSettings", JSON.stringify(settings));
+      applyTheme(settings.theme);
+      ensureNotificationPermission();
       elements.focusMinutes.textContent = settings.focus;
       elements.shortMinutes.textContent = settings.shortBreak;
       elements.longMinutes.textContent = settings.longBreak;
@@ -537,25 +864,18 @@
       elements.progressRing.style.strokeDashoffset = offset.toFixed(2);
     }
 
-    function updateDots() {
-      elements.sessionDots.innerHTML = "";
-      for (let i = 0; i < settings.longBreakAfter; i += 1) {
-        const dot = document.createElement("span");
-        dot.className = "dot" + (i < state.sessionsCompleted % settings.longBreakAfter ? " active" : "");
-        elements.sessionDots.appendChild(dot);
-      }
-    }
-
     function updateLabels() {
       const labels = {
-        focus: "Focus",
-        shortBreak: "Short Break",
-        longBreak: "Long Break"
+        focus: "FOCUS",
+        shortBreak: "SHORT BREAK",
+        longBreak: "LONG BREAK"
       };
       const label = labels[state.mode];
       elements.modeLabel.textContent = label;
-      elements.statusLabel.textContent = label;
       elements.cycleLabel.textContent = `Session ${(state.sessionsCompleted % settings.longBreakAfter) + 1} of ${settings.longBreakAfter}`;
+      document.querySelectorAll(".mode-tab").forEach((tab) => {
+        tab.classList.toggle("active", tab.dataset.mode === state.mode);
+      });
     }
 
     function tick() {
@@ -605,24 +925,143 @@
       if (settings.sound) {
         playBeep();
       }
+      if (settings.notify) {
+        sendNotification();
+      }
+      showToast(`${elements.modeLabel.textContent} complete`);
       if (state.mode === "focus") {
         state.sessionsCompleted += 1;
+        incrementStats();
         const isLongBreak = state.sessionsCompleted % settings.longBreakAfter === 0;
         resetTimer(isLongBreak ? "longBreak" : "shortBreak");
       } else {
         resetTimer("focus");
+      }
+      if (settings.autoStart) {
+        startTimer();
       }
     }
 
     function render() {
       elements.timeDisplay.textContent = formatTime(state.remaining);
       updateRing();
-      updateDots();
       updateLabels();
     }
 
     function toggleSettings(show) {
       elements.settingsPanel.classList.toggle("active", show);
+    }
+
+    function applyTheme(theme) {
+      document.body.setAttribute("data-theme", theme || "ember");
+    }
+
+    function ensureNotificationPermission() {
+      if (!settings.notify || !("Notification" in window)) return;
+      if (Notification.permission === "default") {
+        Notification.requestPermission();
+      }
+    }
+
+    function sendNotification() {
+      if (!("Notification" in window)) return;
+      if (Notification.permission !== "granted") return;
+      new Notification("Pomodoro", { body: `${elements.modeLabel.textContent} complete.` });
+    }
+
+    function showToast(message) {
+      const toast = document.createElement("div");
+      toast.className = "toast";
+      toast.textContent = message;
+      elements.toastContainer.appendChild(toast);
+      setTimeout(() => {
+        toast.remove();
+      }, 3000);
+    }
+
+    function getTodos() {
+      return JSON.parse(localStorage.getItem("pomodoroTodos") || "[]");
+    }
+
+    function setTodos(items) {
+      localStorage.setItem("pomodoroTodos", JSON.stringify(items));
+      renderTodos();
+    }
+
+    function addTodo(text) {
+      const trimmed = text.trim();
+      if (!trimmed) return;
+      const todos = getTodos();
+      todos.unshift({ id: Date.now(), text: trimmed, done: false });
+      setTodos(todos);
+      elements.todoInput.value = "";
+    }
+
+    function toggleTodo(id) {
+      const todos = getTodos();
+      const next = todos.map((todo) => (todo.id === id ? { ...todo, done: !todo.done } : todo));
+      setTodos(next);
+    }
+
+    function removeTodo(id) {
+      const todos = getTodos().filter((todo) => todo.id !== id);
+      setTodos(todos);
+    }
+
+    function renderTodos() {
+      const todos = getTodos();
+      elements.todoList.innerHTML = "";
+      if (!todos.length) {
+        const empty = document.createElement("div");
+        empty.className = "status";
+        empty.textContent = "No tasks yet";
+        elements.todoList.appendChild(empty);
+        return;
+      }
+      todos.forEach((todo) => {
+        const item = document.createElement("div");
+        item.className = `todo-item${todo.done ? " done" : ""}`;
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = todo.done;
+        checkbox.addEventListener("change", () => toggleTodo(todo.id));
+        const text = document.createElement("div");
+        text.className = "todo-text";
+        text.textContent = todo.text;
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.textContent = "✕";
+        remove.addEventListener("click", () => removeTodo(todo.id));
+        item.appendChild(checkbox);
+        item.appendChild(text);
+        item.appendChild(remove);
+        elements.todoList.appendChild(item);
+      });
+    }
+
+    function getStats() {
+      const today = new Date().toISOString().slice(0, 10);
+      const stored = JSON.parse(localStorage.getItem("pomodoroStats") || "{}");
+      if (stored.date !== today) {
+        return { date: today, focusCount: 0 };
+      }
+      return stored;
+    }
+
+    function setStats(stats) {
+      localStorage.setItem("pomodoroStats", JSON.stringify(stats));
+      updateStatsLabel();
+    }
+
+    function incrementStats() {
+      const stats = getStats();
+      stats.focusCount += 1;
+      setStats(stats);
+    }
+
+    function updateStatsLabel() {
+      const stats = getStats();
+      elements.statsLabel.textContent = `Today: ${stats.focusCount} focus`;
     }
 
     function adjustSetting(key, delta, min, max) {
@@ -665,11 +1104,65 @@
       toggleSettings(false);
     });
 
+    elements.themeSelect.addEventListener("change", (event) => {
+      applyTheme(event.target.value);
+    });
+
+    elements.notifyToggle.addEventListener("change", () => {
+      settings.notify = elements.notifyToggle.checked;
+      if (settings.notify) {
+        ensureNotificationPermission();
+      }
+    });
+
+    elements.addTodoBtn.addEventListener("click", () => addTodo(elements.todoInput.value));
+    elements.todoInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        addTodo(elements.todoInput.value);
+      }
+    });
+
+    const tabs = document.querySelectorAll(".pill-tab");
+    const panels = document.querySelectorAll(".settings-panel");
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        const target = tab.dataset.panel;
+        tabs.forEach((item) => item.classList.toggle("active", item === tab));
+        panels.forEach((panel) => panel.classList.toggle("active", panel.dataset.panel === target));
+      });
+    });
+
     counters.forEach((counter) => {
       document.getElementById(counter.minus).addEventListener("click", () => adjustSetting(counter.key, -1, counter.min, counter.max));
       document.getElementById(counter.plus).addEventListener("click", () => adjustSetting(counter.key, 1, counter.min, counter.max));
     });
 
+    document.querySelectorAll(".mode-tab").forEach((tab) => {
+      tab.addEventListener("click", () => {
+        resetTimer(tab.dataset.mode);
+      });
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.target && ["INPUT", "SELECT", "TEXTAREA"].includes(event.target.tagName)) return;
+      if (event.code === "Space") {
+        event.preventDefault();
+        if (state.running) {
+          pauseTimer();
+        } else {
+          startTimer();
+        }
+      }
+      if (event.key.toLowerCase() === "r") {
+        resetTimer("focus");
+      }
+      if (event.key === "1") resetTimer("focus");
+      if (event.key === "2") resetTimer("shortBreak");
+      if (event.key === "3") resetTimer("longBreak");
+    });
+
+    renderTodos();
     render();
   </script>
 </body>
