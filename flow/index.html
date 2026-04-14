@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --mist: #f7f2ec;
+      --sand: #efe4d9;
+      --card: #121317;
+      --card-soft: #1b1d23;
+      --stroke: #262932;
+      --muted: #a2a6b1;
+      --text: #f4f6fa;
+      --accent: #ff7a52;
+      --accent-soft: rgba(255, 122, 82, 0.18);
+      --shadow: 0 20px 42px rgba(10, 11, 15, 0.32);
+      --radius: 26px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "DM Sans", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: radial-gradient(circle at 12% 20%, rgba(255, 213, 196, 0.7) 0%, transparent 44%),
+        radial-gradient(circle at 16% 80%, rgba(255, 191, 168, 0.45) 0%, transparent 55%),
+        linear-gradient(160deg, var(--mist), var(--sand));
+      color: var(--text);
+      padding: 32px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      position: relative;
+    }
+
+    .shell {
+      width: 100%;
+      max-width: 1100px;
+      display: grid;
+      gap: 18px;
+      align-content: start;
+    }
+
+    .topbar {
+      background: radial-gradient(circle at 30% 30%, rgba(255, 122, 82, 0.6), transparent 62%),
+        linear-gradient(150deg, #131419, #17111b 60%, #0f1014);
+      border-radius: 32px;
+      padding: 22px 24px;
+      box-shadow: var(--shadow);
+      display: grid;
+      gap: 14px;
+      align-self: start;
+      position: relative;
+    }
+
+    .top-link {
+      position: fixed;
+      top: 24px;
+      right: 28px;
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text);
+      text-decoration: none;
+      background: rgba(15, 16, 20, 0.65);
+      border: 1px solid var(--stroke);
+      border-radius: 999px;
+      padding: 6px 12px;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+
+    .top-link:hover {
+      transform: translateY(-1px);
+      border-color: var(--accent);
+    }
+
+    .title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .title {
+      font-family: "Fraunces", serif;
+      font-size: clamp(30px, 3.2vw, 42px);
+      line-height: 1;
+    }
+    .report {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+      display: grid;
+      gap: 12px;
+    }
+
+    .report textarea {
+      width: 100%;
+      min-height: 180px;
+      background: #0f1014;
+      border: 1px solid var(--stroke);
+      border-radius: 12px;
+      padding: 12px;
+      color: var(--text);
+      font-size: 13px;
+      resize: vertical;
+    }
+
+    .report-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .report-actions button {
+      border-radius: 999px;
+      border: 1px solid var(--stroke);
+      background: transparent;
+      color: var(--text);
+      padding: 8px 14px;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .report-actions button.primary {
+      background: var(--accent);
+      border-color: transparent;
+      color: #151518;
+    }
+
+    .matrix {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+      display: grid;
+      gap: 14px;
+    }
+
+    .matrix-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .quadrant {
+      border-radius: 18px;
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+      min-height: 170px;
+      background: #14161c;
+      border: 1px solid var(--stroke);
+    }
+
+    .quadrant.q1 {
+      background: linear-gradient(140deg, rgba(255, 122, 82, 0.22), rgba(20, 22, 28, 0.95));
+      border-color: rgba(255, 122, 82, 0.45);
+    }
+
+    .quadrant.q2 {
+      background: linear-gradient(140deg, rgba(255, 206, 128, 0.2), rgba(20, 22, 28, 0.95));
+      border-color: rgba(255, 206, 128, 0.4);
+    }
+
+    .quadrant.q3 {
+      background: linear-gradient(140deg, rgba(255, 145, 145, 0.2), rgba(20, 22, 28, 0.95));
+      border-color: rgba(255, 145, 145, 0.4);
+    }
+
+    .quadrant.q4 {
+      background: linear-gradient(140deg, rgba(159, 205, 255, 0.2), rgba(20, 22, 28, 0.95));
+      border-color: rgba(159, 205, 255, 0.4);
+    }
+
+    .quadrant-title {
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .matrix-list {
+      display: grid;
+      gap: 8px;
+      max-height: 140px;
+      overflow-y: auto;
+      padding-right: 6px;
+    }
+
+    .matrix-item {
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: rgba(14, 15, 19, 0.8);
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 14px;
+      max-width: 560px;
+      line-height: 1.6;
+    }
+
+    .capture {
+      display: grid;
+      gap: 10px;
+    }
+
+    .capture-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+    }
+
+    .capture-row {
+      display: grid;
+      grid-template-columns: 1.2fr 0.9fr auto;
+      gap: 10px;
+    }
+
+    .capture-row input,
+    .capture-row select {
+      background: #0f1014;
+      border: 1px solid var(--stroke);
+      border-radius: 14px;
+      padding: 12px 14px;
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    .capture-row button {
+      border: none;
+      border-radius: 999px;
+      padding: 12px 20px;
+      background: var(--accent);
+      color: #151518;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .options-toggle {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .options {
+      display: none;
+      grid-template-columns: 0.8fr 0.8fr 1fr 1fr;
+      gap: 10px;
+    }
+
+    .options.active {
+      display: grid;
+    }
+
+    .options input,
+    .options select {
+      background: #0f1014;
+      border: 1px solid var(--stroke);
+      border-radius: 12px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-size: 13px;
+    }
+
+    .options input[type="date"] {
+      color-scheme: dark;
+    }
+
+    .meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+    }
+
+    #todayLabel {
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--stroke);
+      background: rgba(15, 16, 20, 0.7);
+      color: var(--text);
+    }
+
+    .filters {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      background: var(--card-soft);
+      border: 1px solid var(--stroke);
+      color: var(--muted);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .chip.active {
+      color: var(--text);
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .ghost {
+      background: transparent;
+      border: 1px solid var(--stroke);
+      color: var(--text);
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .ghost.active {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      color: var(--text);
+    }
+
+    .section-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.26), transparent);
+      margin: 10px 0 6px;
+    }
+
+    .section-shell {
+      background: rgba(12, 13, 18, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 28px;
+      padding: 12px;
+    }
+
+    .is-hidden {
+      display: none !important;
+    }
+
+    .ghost.copied {
+      border-color: var(--accent);
+      color: #151518;
+      background: var(--accent);
+      animation: pulse 0.35s ease;
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.03);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .section {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+      display: grid;
+      gap: 12px;
+      min-height: 210px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .section-header span {
+      color: var(--text);
+    }
+
+    .section-list {
+      display: grid;
+      gap: 8px;
+      max-height: 190px;
+      overflow-y: auto;
+      padding-right: 6px;
+    }
+
+    .kanban {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .kanban-col {
+      background: #14161c;
+      border: 1px solid var(--stroke);
+      border-radius: 18px;
+      padding: 12px;
+      display: grid;
+      gap: 10px;
+      min-height: 220px;
+    }
+
+    .kanban-title {
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .kanban-list {
+      display: grid;
+      gap: 8px;
+      max-height: 220px;
+      overflow-y: auto;
+      padding-right: 6px;
+    }
+
+    .task {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 10px;
+      align-items: center;
+      background: #14161c;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 13px;
+      height: 58px;
+    }
+
+    .task.done .task-text {
+      text-decoration: line-through;
+      color: var(--muted);
+    }
+
+    .task-meta {
+      display: flex;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .pill {
+      border: 1px solid var(--stroke);
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .pill.high {
+      border-color: rgba(255, 122, 82, 0.6);
+      color: #ffd5c6;
+    }
+
+    .pill.med {
+      border-color: rgba(255, 206, 128, 0.5);
+      color: #ffe6b5;
+    }
+
+    .pill.low {
+      border-color: rgba(159, 205, 255, 0.5);
+      color: #cfe4ff;
+    }
+
+    .task input[type="checkbox"] {
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 6px;
+      border: 1px solid var(--stroke);
+      background: #0f1014;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+    }
+
+    .task input[type="checkbox"]::after {
+      content: "";
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      background: var(--accent);
+      transform: scale(0);
+      transition: transform 0.15s ease;
+    }
+
+    .task input[type="checkbox"]:checked::after {
+      transform: scale(1);
+    }
+
+    .task button {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .task-text {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .section-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .section-list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .section-list::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.18);
+      border-radius: 999px;
+    }
+
+    .section-list {
+      scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+      scrollbar-width: thin;
+    }
+
+    @media (max-width: 1100px) {
+      .board {
+        grid-template-columns: 1fr;
+      }
+
+      .options {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .kanban {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <a class="top-link" href="https://rdparihar.github.io/rdtool/pomodoro/" target="_blank" rel="noopener">Want Focus, Try Pomodoro Timer</a>
+    <header class="topbar">
+      <div class="title-row">
+        <div class="title">Flow</div>
+        <div id="todayLabel"></div>
+      </div>
+      <div class="subtitle">
+        A calm command surface for priorities, risks, follow-ups, and decisions. Capture once, then filter down.
+      </div>
+      <div class="capture">
+        <div class="capture-row">
+          <input id="taskInput" type="text" placeholder="Capture a task or follow-up" />
+          <select id="sectionSelect"></select>
+          <button id="addTaskBtn" type="button">Add</button>
+        </div>
+        <div class="options-toggle" id="optionsToggle">More options</div>
+        <div class="options" id="optionsPanel">
+          <select id="prioritySelect">
+            <option value="high">High</option>
+            <option value="med" selected>Medium</option>
+            <option value="low">Low</option>
+          </select>
+          <select id="statusSelect">
+            <option value="todo" selected>To Do</option>
+            <option value="doing">In Progress</option>
+            <option value="done">Done</option>
+          </select>
+          <input id="ownerInput" type="text" placeholder="Owner" />
+          <input id="dueInput" type="date" />
+        </div>
+      </div>
+      <div class="meta">
+        <div class="filters" id="statusFilters"></div>
+        <div class="filters">
+          <button class="ghost" id="boardToggle" type="button">Categories</button>
+          <button class="ghost" id="reportToggle" type="button">Report</button>
+          <button class="ghost" id="matrixToggle" type="button">Matrix</button>
+          <button class="ghost" id="kanbanToggle" type="button">Kanban</button>
+          <button class="ghost" id="clearDoneBtn" type="button">Clear Done</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="section-shell" id="boardShell">
+      <div class="section-header">
+        <div>Categories</div>
+        <span>Status Board</span>
+      </div>
+      <section class="board" id="board"></section>
+    </div>
+    <div class="section-divider"></div>
+    <div class="section-shell" id="reportShell">
+      <section class="report" id="reportPanel">
+      <div class="section-header">
+        <div>Report Draft</div>
+        <span id="reportRangeLabel">Today</span>
+      </div>
+      <textarea id="reportOutput" readonly></textarea>
+      <div class="report-actions">
+        <button class="primary" id="copyReportBtn" type="button">Copy Report</button>
+        <button id="dailyReportBtn" type="button">Daily</button>
+        <button id="weeklyReportBtn" type="button">Weekly</button>
+      </div>
+      </section>
+    </div>
+    <div class="section-divider"></div>
+    <div class="section-shell" id="matrixShell">
+      <section class="matrix" id="matrixPanel">
+      <div class="section-header">
+        <div>Eisenhower Matrix</div>
+        <span>Urgent vs Important</span>
+      </div>
+      <div class="matrix-grid">
+        <div class="quadrant q1">
+          <div class="quadrant-title">Do Now (Urgent + Important)</div>
+          <div class="matrix-list" id="q1List"></div>
+        </div>
+        <div class="quadrant q2">
+          <div class="quadrant-title">Schedule (Not Urgent + Important)</div>
+          <div class="matrix-list" id="q2List"></div>
+        </div>
+        <div class="quadrant q3">
+          <div class="quadrant-title">Delegate (Urgent + Not Important)</div>
+          <div class="matrix-list" id="q3List"></div>
+        </div>
+        <div class="quadrant q4">
+          <div class="quadrant-title">Eliminate (Not Urgent + Not Important)</div>
+          <div class="matrix-list" id="q4List"></div>
+        </div>
+      </div>
+      </section>
+    </div>
+    <div class="section-divider"></div>
+    <div class="section-shell" id="kanbanShell">
+      <div class="section-header">
+        <div>Kanban Board</div>
+        <span>Flow View</span>
+      </div>
+      <section class="kanban" id="kanbanBoard">
+        <div class="kanban-col">
+          <div class="kanban-title">To Do</div>
+          <div class="kanban-list" id="kanbanTodo"></div>
+        </div>
+        <div class="kanban-col">
+          <div class="kanban-title">In Progress</div>
+          <div class="kanban-list" id="kanbanDoing"></div>
+        </div>
+        <div class="kanban-col">
+          <div class="kanban-title">Done</div>
+          <div class="kanban-list" id="kanbanDone"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const sections = [
+      { id: "today", title: "Today’s Priorities" },
+      { id: "week", title: "This Week" },
+      { id: "accomplishments", title: "Accomplishments" },
+      { id: "resolved", title: "Resolved Issues" },
+      { id: "next", title: "Next Steps" },
+      { id: "risks", title: "Risks / Blockers" },
+      { id: "people", title: "People Follow-ups" }
+    ];
+
+    const filters = {
+      status: "all"
+    };
+
+    const elements = {
+      taskInput: document.getElementById("taskInput"),
+      sectionSelect: document.getElementById("sectionSelect"),
+      prioritySelect: document.getElementById("prioritySelect"),
+      statusSelect: document.getElementById("statusSelect"),
+      ownerInput: document.getElementById("ownerInput"),
+      dueInput: document.getElementById("dueInput"),
+      addTaskBtn: document.getElementById("addTaskBtn"),
+      board: document.getElementById("board"),
+      todayLabel: document.getElementById("todayLabel"),
+      statusFilters: document.getElementById("statusFilters"),
+      clearDoneBtn: document.getElementById("clearDoneBtn"),
+      optionsToggle: document.getElementById("optionsToggle"),
+      optionsPanel: document.getElementById("optionsPanel"),
+      reportToggle: document.getElementById("reportToggle"),
+      boardToggle: document.getElementById("boardToggle"),
+      matrixToggle: document.getElementById("matrixToggle"),
+      kanbanToggle: document.getElementById("kanbanToggle"),
+      reportPanel: document.getElementById("reportPanel"),
+      reportShell: document.getElementById("reportShell"),
+      boardShell: document.getElementById("boardShell"),
+      matrixShell: document.getElementById("matrixShell"),
+      kanbanShell: document.getElementById("kanbanShell"),
+      reportOutput: document.getElementById("reportOutput"),
+      reportRangeLabel: document.getElementById("reportRangeLabel"),
+      copyReportBtn: document.getElementById("copyReportBtn"),
+      dailyReportBtn: document.getElementById("dailyReportBtn"),
+      weeklyReportBtn: document.getElementById("weeklyReportBtn"),
+      q1List: document.getElementById("q1List"),
+      q2List: document.getElementById("q2List"),
+      q3List: document.getElementById("q3List"),
+      q4List: document.getElementById("q4List"),
+      kanbanTodo: document.getElementById("kanbanTodo"),
+      kanbanDoing: document.getElementById("kanbanDoing"),
+      kanbanDone: document.getElementById("kanbanDone")
+    };
+
+    function getStore(key, fallback) {
+      const stored = JSON.parse(localStorage.getItem(key) || "null");
+      return stored ?? fallback;
+    }
+
+    function setStore(key, value) {
+      localStorage.setItem(key, JSON.stringify(value));
+    }
+
+    function formatDate() {
+      return new Date().toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" });
+    }
+
+    function formatWeekRange() {
+      const now = new Date();
+      const day = now.getDay();
+      const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+      const start = new Date(now.setDate(diff));
+      const end = new Date(start);
+      end.setDate(start.getDate() + 6);
+      const fmt = (d) => d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+      return `${fmt(start)} - ${fmt(end)}`;
+    }
+
+    function buildSelectOptions() {
+      elements.sectionSelect.innerHTML = "";
+      sections.forEach((section) => {
+        const option = document.createElement("option");
+        option.value = section.id;
+        option.textContent = section.title;
+        elements.sectionSelect.appendChild(option);
+      });
+      elements.sectionSelect.value = "today";
+    }
+
+    function setTodayDate() {
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, "0");
+      const dd = String(today.getDate()).padStart(2, "0");
+      elements.dueInput.value = `${yyyy}-${mm}-${dd}`;
+    }
+
+    function getTasks() {
+      return getStore("emTasksMinimal", []);
+    }
+
+    function setTasks(tasks) {
+      setStore("emTasksMinimal", tasks);
+      render();
+    }
+
+    function addTask() {
+      const text = elements.taskInput.value.trim();
+      if (!text) return;
+      const task = {
+        id: Date.now(),
+        text,
+        section: elements.sectionSelect.value,
+        priority: elements.prioritySelect.value,
+        status: elements.statusSelect.value,
+        owner: elements.ownerInput.value.trim(),
+        due: elements.dueInput.value,
+        done: false
+      };
+      const tasks = getTasks();
+      tasks.unshift(task);
+      setTasks(tasks);
+      elements.taskInput.value = "";
+      elements.ownerInput.value = "";
+      elements.dueInput.value = "";
+      elements.statusSelect.value = "todo";
+      elements.taskInput.focus();
+    }
+
+    function toggleTask(id) {
+      const tasks = getTasks();
+      const next = tasks.map((task) => (task.id === id ? { ...task, done: !task.done } : task));
+      setTasks(next);
+    }
+
+    function removeTask(id) {
+      const tasks = getTasks().filter((task) => task.id !== id);
+      setTasks(tasks);
+    }
+
+    function editTask(id) {
+      const tasks = getTasks();
+      const current = tasks.find((task) => task.id === id);
+      if (!current) return;
+      const text = window.prompt("Edit task", current.text);
+      if (text === null) return;
+      const owner = window.prompt("Owner", current.owner || "");
+      if (owner === null) return;
+      const due = window.prompt("Due date (YYYY-MM-DD)", current.due || "");
+      if (due === null) return;
+      const priority = window.prompt("Priority (high, med, low)", current.priority || "med");
+      if (priority === null) return;
+      const status = window.prompt("Status (todo, doing, done)", current.status || "todo");
+      if (status === null) return;
+      const section = window.prompt("Category", current.section || "today");
+      if (section === null) return;
+
+      const next = tasks.map((task) => {
+        if (task.id !== id) return task;
+        return {
+          ...task,
+          text: text.trim() || task.text,
+          owner: owner.trim(),
+          due: due.trim(),
+          priority: ["high", "med", "low"].includes(priority) ? priority : task.priority,
+          status: ["todo", "doing", "done"].includes(status) ? status : task.status,
+          section: section.trim() || task.section
+        };
+      });
+      setTasks(next);
+    }
+
+    function clearDone() {
+      const tasks = getTasks().filter((task) => !task.done);
+      setTasks(tasks);
+    }
+
+    function passesFilters(task) {
+      return filters.status === "all" || (filters.status === "open" && !task.done) || (filters.status === "done" && task.done);
+    }
+
+    function renderFilters() {
+      const statusOptions = [
+        { id: "all", label: "All" },
+        { id: "open", label: "Open" },
+        { id: "done", label: "Done" }
+      ];
+
+      elements.statusFilters.innerHTML = "";
+      statusOptions.forEach((option) => {
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.className = `chip${filters.status === option.id ? " active" : ""}`;
+        chip.textContent = option.label;
+        chip.addEventListener("click", () => {
+          filters.status = option.id;
+          render();
+        });
+        elements.statusFilters.appendChild(chip);
+      });
+    }
+
+    function renderBoard() {
+      const tasks = getTasks();
+      elements.board.innerHTML = "";
+      sections.forEach((section) => {
+        const card = document.createElement("div");
+        card.className = "section";
+        const header = document.createElement("div");
+        header.className = "section-header";
+        const count = tasks.filter((task) => task.section === section.id && passesFilters(task)).length;
+        header.innerHTML = `${section.title} <span>${count}</span>`;
+
+        const list = document.createElement("div");
+        list.className = "section-list";
+        const filtered = tasks.filter((task) => task.section === section.id && passesFilters(task));
+
+        if (!filtered.length) {
+          const empty = document.createElement("div");
+          empty.className = "subtitle";
+          empty.textContent = "No items yet";
+          list.appendChild(empty);
+        } else {
+          filtered.forEach((task) => {
+            const row = document.createElement("div");
+            row.className = `task${task.done ? " done" : ""}`;
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.checked = task.done;
+            checkbox.addEventListener("change", () => toggleTask(task.id));
+            const textWrap = document.createElement("div");
+            textWrap.className = "task-text";
+            textWrap.textContent = task.text;
+            const meta = document.createElement("div");
+            meta.className = "task-meta";
+            if (task.owner) {
+              const owner = document.createElement("span");
+              owner.textContent = task.owner;
+              meta.appendChild(owner);
+            }
+            if (task.due) {
+              const due = document.createElement("span");
+              due.textContent = task.due;
+              meta.appendChild(due);
+            }
+            const category = document.createElement("span");
+            category.className = "pill";
+            category.textContent = section.title;
+            meta.appendChild(category);
+            const priority = document.createElement("span");
+            priority.className = `pill ${task.priority}`;
+            priority.textContent = task.priority;
+            meta.appendChild(priority);
+
+            const stack = document.createElement("div");
+            stack.style.display = "grid";
+            stack.style.gap = "4px";
+            stack.appendChild(textWrap);
+            stack.appendChild(meta);
+
+            const edit = document.createElement("button");
+            edit.type = "button";
+            edit.textContent = "✎";
+            edit.addEventListener("click", () => editTask(task.id));
+            const remove = document.createElement("button");
+            remove.type = "button";
+            remove.textContent = "✕";
+            remove.addEventListener("click", () => removeTask(task.id));
+
+            row.appendChild(checkbox);
+            row.appendChild(stack);
+            row.appendChild(edit);
+            row.appendChild(remove);
+            list.appendChild(row);
+          });
+        }
+
+        card.appendChild(header);
+        card.appendChild(list);
+        elements.board.appendChild(card);
+      });
+    }
+
+    function render() {
+      renderFilters();
+      renderBoard();
+      renderMatrix();
+      renderKanban();
+    }
+
+    function toggleSection(button, element) {
+      const isHidden = element.classList.toggle("is-hidden");
+      button.classList.toggle("active", !isHidden);
+    }
+
+    function showKanban() {
+      elements.kanbanShell.classList.remove("is-hidden");
+      elements.kanbanToggle.classList.add("active");
+    }
+
+    function isUrgent(task) {
+      if (!task.due) return false;
+      const today = new Date();
+      const dueDate = new Date(task.due + "T00:00:00");
+      const diffDays = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+      return diffDays <= 2;
+    }
+
+    function isImportant(task) {
+      return task.priority === "high" || task.priority === "med";
+    }
+
+    function renderMatrixList(container, items) {
+      container.innerHTML = "";
+      if (!items.length) {
+        const empty = document.createElement("div");
+        empty.className = "subtitle";
+        empty.textContent = "No items";
+        container.appendChild(empty);
+        return;
+      }
+      items.slice(0, 6).forEach((task) => {
+        const row = document.createElement("div");
+        row.className = "matrix-item";
+        row.textContent = task.text;
+        container.appendChild(row);
+      });
+    }
+
+    function renderMatrix() {
+      const tasks = getTasks().filter((task) => !task.done);
+      const q1 = tasks.filter((task) => isUrgent(task) && isImportant(task));
+      const q2 = tasks.filter((task) => !isUrgent(task) && isImportant(task));
+      const q3 = tasks.filter((task) => isUrgent(task) && !isImportant(task));
+      const q4 = tasks.filter((task) => !isUrgent(task) && !isImportant(task));
+
+      renderMatrixList(elements.q1List, q1);
+      renderMatrixList(elements.q2List, q2);
+      renderMatrixList(elements.q3List, q3);
+      renderMatrixList(elements.q4List, q4);
+    }
+
+    function renderKanbanList(container, items) {
+      container.innerHTML = "";
+      if (!items.length) {
+        const empty = document.createElement("div");
+        empty.className = "subtitle";
+        empty.textContent = "No items";
+        container.appendChild(empty);
+        return;
+      }
+      items.slice(0, 8).forEach((task) => {
+        const row = document.createElement("div");
+        row.className = "matrix-item";
+        row.textContent = task.text;
+        container.appendChild(row);
+      });
+    }
+
+    function renderKanban() {
+      const tasks = getTasks();
+      const todo = tasks.filter((task) => (task.status || "todo") === "todo" && !task.done);
+      const doing = tasks.filter((task) => (task.status || "todo") === "doing" && !task.done);
+      const done = tasks.filter((task) => (task.status || "todo") === "done" || task.done);
+      renderKanbanList(elements.kanbanTodo, todo);
+      renderKanbanList(elements.kanbanDoing, doing);
+      renderKanbanList(elements.kanbanDone, done);
+    }
+
+    function buildReport(rangeLabel) {
+      const tasks = getTasks();
+      const openTasks = tasks.filter((task) => !task.done);
+      const doneTasks = tasks.filter((task) => task.done);
+      const todayLabel = formatDate();
+      const weekLabel = formatWeekRange();
+      const rangeSuffix = rangeLabel === "This Week" ? weekLabel : todayLabel;
+
+      const bySection = (list) => sections.map((section) => {
+        const items = list.filter((task) => task.section === section.id);
+        if (!items.length) return null;
+        const lines = items.map((task) => `- ${task.text}${task.owner ? ` (Owner: ${task.owner})` : ""}${task.due ? ` [Due ${task.due}]` : ""}`);
+        return `${section.title}\n${lines.join("\n")}`;
+      }).filter(Boolean).join("\n\n");
+
+      const report = [
+        `Status Report — ${rangeLabel} (${rangeSuffix})`,
+        "",
+        "Open Items:",
+        bySection(openTasks) || "- None",
+        "",
+        "Completed:",
+        bySection(doneTasks) || "- None"
+      ].join("\n");
+
+      elements.reportOutput.value = report;
+    }
+
+    elements.addTaskBtn.addEventListener("click", addTask);
+    elements.taskInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") addTask();
+    });
+    elements.clearDoneBtn.addEventListener("click", clearDone);
+    elements.optionsToggle.addEventListener("click", () => {
+      elements.optionsPanel.classList.toggle("active");
+    });
+    elements.reportToggle.addEventListener("click", () => {
+      toggleSection(elements.reportToggle, elements.reportShell);
+      if (!elements.reportShell.classList.contains("is-hidden")) {
+        buildReport("Today");
+      }
+    });
+    elements.boardToggle.addEventListener("click", () => {
+      toggleSection(elements.boardToggle, elements.boardShell);
+    });
+    elements.matrixToggle.addEventListener("click", () => {
+      toggleSection(elements.matrixToggle, elements.matrixShell);
+    });
+    elements.kanbanToggle.addEventListener("click", () => {
+      toggleSection(elements.kanbanToggle, elements.kanbanShell);
+    });
+    elements.dailyReportBtn.addEventListener("click", () => {
+      elements.reportRangeLabel.textContent = "Today";
+      buildReport("Today");
+    });
+    elements.weeklyReportBtn.addEventListener("click", () => {
+      elements.reportRangeLabel.textContent = "This Week";
+      buildReport("This Week");
+    });
+    elements.copyReportBtn.addEventListener("click", async () => {
+      await navigator.clipboard.writeText(elements.reportOutput.value);
+      elements.copyReportBtn.classList.add("copied");
+      elements.copyReportBtn.textContent = "Copied";
+      setTimeout(() => {
+        elements.copyReportBtn.classList.remove("copied");
+        elements.copyReportBtn.textContent = "Copy Report";
+      }, 1200);
+    });
+
+    elements.todayLabel.textContent = formatDate();
+    buildSelectOptions();
+    setTodayDate();
+    elements.reportToggle.classList.add("active");
+    elements.matrixToggle.classList.add("active");
+    elements.boardToggle.classList.add("active");
+    showKanban();
+    render();
+  </script>
+</body>
+</html>
