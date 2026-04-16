@@ -1892,6 +1892,7 @@
       const text = validateTaskInput(gElements.taskInput.value);
       if (!text) return;
       const now = Date.now();
+      const isDone = gElements.statusSelect.value === "done";
       const task = {
         id: Date.now(),
         text,
@@ -1903,7 +1904,7 @@
         due: gElements.dueInput.value,
         createdAt: now,
         updatedAt: now,
-        done: false
+        done: isDone
       };
       const tasks = getTasks();
       tasks.unshift(task);
@@ -1919,6 +1920,7 @@
       const text = validateTaskInput(input.value);
       if (!text) return;
       const now = Date.now();
+      const isDone = gElements.statusSelect.value === "done";
       const task = {
         id: Date.now(),
         text,
@@ -1930,7 +1932,7 @@
         due: gElements.dueInput.value,
         createdAt: now,
         updatedAt: now,
-        done: false
+        done: isDone
       };
       const tasks = getTasks();
       tasks.unshift(task);
@@ -2020,6 +2022,7 @@
           priority: ["high", "med", "low"].includes(priority) ? priority : task.priority,
           status: ["todo", "doing", "done"].includes(status) ? status : task.status,
           section: section || task.section,
+          done: status === "done",
           updatedAt: Date.now()
         };
       });
@@ -2055,7 +2058,8 @@
     }
 
     function passesFilters(task) {
-      const statusOk = gFilters.status === "all" || (gFilters.status === "open" && !task.done) || (gFilters.status === "done" && task.done);
+      const isDone = task.done || task.status === "done";
+      const statusOk = gFilters.status === "all" || (gFilters.status === "open" && !isDone) || (gFilters.status === "done" && isDone);
       return statusOk;
     }
 
@@ -2490,7 +2494,7 @@
         const row = document.createElement("tr");
         const status = document.createElement("td");
         const statusPill = document.createElement("span");
-        const statusKey = task.done ? "done" : (task.status || "todo");
+        const statusKey = (task.done || task.status === "done") ? "done" : (task.status || "todo");
         statusPill.className = `status-pill ${statusKey}`;
         statusPill.textContent = statusKey.toUpperCase();
         status.appendChild(statusPill);
@@ -2537,9 +2541,10 @@
       const statusOrder = { todo: 1, doing: 2, done: 3 };
       const getSectionLabel = (id) => gSections.find((item) => item.id === id)?.title || id || "";
       const getValue = (task) => {
+        const isDone = task.done || task.status === "done";
         switch (gTableSort.key) {
           case "status":
-            return statusOrder[task.done ? "done" : (task.status || "todo")] || 99;
+            return statusOrder[isDone ? "done" : (task.status || "todo")] || 99;
           case "text":
             return (task.text || "").toLowerCase();
           case "section":
@@ -2590,7 +2595,7 @@
       const tasks = sortTasksForTable(getTasks().filter((task) => passesFilters(task)));
       const rows = tasks.map((task) => {
         const sectionLabel = gSections.find((item) => item.id === task.section)?.title || task.section || "";
-        const status = task.done ? "Done" : (task.status || "todo");
+        const status = (task.done || task.status === "done") ? "Done" : (task.status || "todo");
         return [
           status,
           task.text || "",
