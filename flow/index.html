@@ -1195,6 +1195,124 @@
       margin-top: 6px;
     }
 
+    .table-shell {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 35%);
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border-radius: 16px;
+      border: 1px solid var(--stroke);
+      background: rgba(14, 15, 19, 0.7);
+    }
+
+    table.task-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 720px;
+    }
+
+    .task-table thead {
+      background: rgba(15, 16, 20, 0.85);
+    }
+
+    .task-table th,
+    .task-table td {
+      padding: 10px 12px;
+      text-align: left;
+      font-size: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .task-table th {
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-size: 10px;
+      color: var(--muted);
+      position: sticky;
+      top: 0;
+      background: rgba(15, 16, 20, 0.95);
+      z-index: 1;
+    }
+
+    .task-table th.sortable {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .task-table th[data-sort-active="true"] {
+      color: var(--text);
+    }
+
+    .task-table th .sort-indicator {
+      margin-left: 6px;
+      font-size: 9px;
+      opacity: 0.8;
+    }
+
+    .task-table tbody tr {
+      transition: background 0.2s ease;
+    }
+
+    .task-table tbody tr:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .task-table .table-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--stroke);
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .task-table .table-pill.high {
+      border-color: rgba(255, 122, 82, 0.6);
+      color: #ffd5c6;
+    }
+
+    .task-table .table-pill.med {
+      border-color: rgba(255, 206, 128, 0.5);
+      color: #ffe6b5;
+    }
+
+    .task-table .table-pill.low {
+      border-color: rgba(159, 205, 255, 0.5);
+      color: #cfe4ff;
+    }
+
+    .table-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .table-actions .ghost {
+      padding: 6px 12px;
+      font-size: 10px;
+    }
+
+    .table-action-btn {
+      border: 1px solid var(--stroke);
+      background: transparent;
+      color: var(--text);
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
     .metric-card {
       background: rgba(15, 16, 20, 0.75);
       border: 1px solid rgba(255, 255, 255, 0.12);
@@ -1286,6 +1404,7 @@
           <button class="ghost" data-view="report" type="button">Report</button>
           <button class="ghost" data-view="matrix" type="button">Matrix</button>
           <button class="ghost" data-view="kanban" type="button">Kanban</button>
+          <button class="ghost" data-view="table" type="button">Table</button>
           <button class="ghost" data-view="parking" type="button">Parking</button>
         </div>
       </div>
@@ -1351,6 +1470,33 @@
           </div>
         </section>
       </div>
+      <div class="view-panel is-hidden" id="tableView">
+        <section class="table-shell glass card-hover transition-all duration-200 hover:scale-[1.02]" id="tableShell">
+          <div class="section-header">
+            <div>Table View</div>
+            <div class="table-actions">
+              <button class="ghost" id="exportCsvBtn" type="button">Export CSV</button>
+              <span id="tableCount">0</span>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="task-table" id="taskTable">
+              <thead>
+                <tr>
+                  <th class="sortable" data-sort-key="status">Status <span class="sort-indicator">↕</span></th>
+                  <th class="sortable" data-sort-key="text">Task <span class="sort-indicator">↕</span></th>
+                  <th class="sortable" data-sort-key="section">Section <span class="sort-indicator">↕</span></th>
+                  <th class="sortable" data-sort-key="owner">Owner <span class="sort-indicator">↕</span></th>
+                  <th class="sortable" data-sort-key="due">Due <span class="sort-indicator">↕</span></th>
+                  <th class="sortable" data-sort-key="priority">Priority <span class="sort-indicator">↕</span></th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
       <div class="view-panel is-hidden" id="parkingView">
         <section class="section-shell glass card-hover transition-all duration-200 hover:scale-[1.02]" id="parkingShell">
           <div class="section-header">
@@ -1406,6 +1552,7 @@
     let gLastReportHtml = "";
     let gLastReportHtmlOneNote = "";
     let gEditingTaskId = null;
+    let gTableSort = { key: "due", dir: "asc" };
     const gThemeToggle = document.getElementById("themeToggle");
     const gSections = [
       { id: "today", title: "Today’s Priorities" },
@@ -1436,6 +1583,7 @@
       reportView: document.getElementById("reportView"),
       matrixView: document.getElementById("matrixView"),
       kanbanView: document.getElementById("kanbanView"),
+      tableView: document.getElementById("tableView"),
       parkingView: document.getElementById("parkingView"),
       parkingList: document.getElementById("parkingList"),
       parkingCount: document.getElementById("parkingCount"),
@@ -1486,7 +1634,10 @@
       q4List: document.getElementById("q4List"),
       kanbanTodo: document.getElementById("kanbanTodo"),
       kanbanDoing: document.getElementById("kanbanDoing"),
-      kanbanDone: document.getElementById("kanbanDone")
+      kanbanDone: document.getElementById("kanbanDone"),
+      tableBody: document.getElementById("tableBody"),
+      tableCount: document.getElementById("tableCount"),
+      exportCsvBtn: document.getElementById("exportCsvBtn")
     };
 
     function getStore(key, fallback) {
@@ -2036,6 +2187,7 @@
       renderBoard();
       renderMatrix();
       renderKanban();
+      renderTable();
       renderParkingView();
       renderFocusToday();
       renderMetrics();
@@ -2048,6 +2200,7 @@
         report: gElements.reportView,
         matrix: gElements.matrixView,
         kanban: gElements.kanbanView,
+        table: gElements.tableView,
         parking: gElements.parkingView
       };
       Object.entries(views).forEach(([key, el]) => {
@@ -2126,6 +2279,153 @@
       renderKanbanList(gElements.kanbanTodo, todo);
       renderKanbanList(gElements.kanbanDoing, doing);
       renderKanbanList(gElements.kanbanDone, done);
+    }
+
+    function renderTable() {
+      const tasks = getTasks().filter((task) => passesFilters(task));
+      const sorted = sortTasksForTable(tasks);
+      gElements.tableBody.innerHTML = "";
+      gElements.tableCount.textContent = String(sorted.length);
+      updateTableSortIndicators();
+      if (!sorted.length) {
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+        cell.colSpan = 7;
+        cell.className = "subtitle";
+        cell.textContent = "No tasks to show";
+        row.appendChild(cell);
+        gElements.tableBody.appendChild(row);
+        return;
+      }
+      sorted.forEach((task) => {
+        const row = document.createElement("tr");
+        const status = document.createElement("td");
+        status.textContent = task.done ? "Done" : (task.status || "todo");
+        const text = document.createElement("td");
+        text.textContent = task.text;
+        const section = document.createElement("td");
+        const sectionLabel = gSections.find((item) => item.id === task.section)?.title || task.section || "-";
+        section.textContent = sectionLabel;
+        const owner = document.createElement("td");
+        owner.textContent = task.owner || "-";
+        const due = document.createElement("td");
+        due.textContent = task.due || "-";
+        const priority = document.createElement("td");
+        const pill = document.createElement("span");
+        pill.className = `table-pill ${task.priority || "med"}`;
+        pill.textContent = (task.priority || "med").toUpperCase();
+        priority.appendChild(pill);
+        const actions = document.createElement("td");
+        const editBtn = document.createElement("button");
+        editBtn.type = "button";
+        editBtn.className = "table-action-btn";
+        editBtn.textContent = "Edit";
+        editBtn.addEventListener("click", () => editTask(task.id));
+        const removeBtn = document.createElement("button");
+        removeBtn.type = "button";
+        removeBtn.className = "table-action-btn";
+        removeBtn.textContent = "Delete";
+        removeBtn.addEventListener("click", () => removeTask(task.id));
+        actions.appendChild(editBtn);
+        actions.appendChild(removeBtn);
+        row.appendChild(status);
+        row.appendChild(text);
+        row.appendChild(section);
+        row.appendChild(owner);
+        row.appendChild(due);
+        row.appendChild(priority);
+        row.appendChild(actions);
+        gElements.tableBody.appendChild(row);
+      });
+    }
+
+    function sortTasksForTable(tasks) {
+      const order = { high: 1, med: 2, low: 3 };
+      const statusOrder = { todo: 1, doing: 2, done: 3 };
+      const getSectionLabel = (id) => gSections.find((item) => item.id === id)?.title || id || "";
+      const getValue = (task) => {
+        switch (gTableSort.key) {
+          case "status":
+            return statusOrder[task.done ? "done" : (task.status || "todo")] || 99;
+          case "text":
+            return (task.text || "").toLowerCase();
+          case "section":
+            return getSectionLabel(task.section).toLowerCase();
+          case "owner":
+            return (task.owner || "").toLowerCase();
+          case "due":
+            return task.due ? new Date(task.due + "T00:00:00").getTime() : Number.MAX_SAFE_INTEGER;
+          case "priority":
+            return order[task.priority || "med"] || 99;
+          default:
+            return (task.text || "").toLowerCase();
+        }
+      };
+      const sorted = tasks.slice().map((task, index) => ({ task, index }));
+      sorted.sort((a, b) => {
+        const av = getValue(a.task);
+        const bv = getValue(b.task);
+        if (av === bv) return a.index - b.index;
+        if (av > bv) return gTableSort.dir === "asc" ? 1 : -1;
+        return gTableSort.dir === "asc" ? -1 : 1;
+      });
+      return sorted.map((item) => item.task);
+    }
+
+    function updateTableSortIndicators() {
+      const headers = gElements.tableView.querySelectorAll("th[data-sort-key]");
+      headers.forEach((header) => {
+        const isActive = header.dataset.sortKey === gTableSort.key;
+        header.dataset.sortActive = isActive ? "true" : "false";
+        const indicator = header.querySelector(".sort-indicator");
+        if (indicator) {
+          indicator.textContent = isActive ? (gTableSort.dir === "asc" ? "▲" : "▼") : "↕";
+        }
+      });
+    }
+
+    function toggleTableSort(key) {
+      if (gTableSort.key === key) {
+        gTableSort.dir = gTableSort.dir === "asc" ? "desc" : "asc";
+      } else {
+        gTableSort = { key, dir: "asc" };
+      }
+      renderTable();
+    }
+
+    function exportTableCsv() {
+      const tasks = sortTasksForTable(getTasks().filter((task) => passesFilters(task)));
+      const rows = tasks.map((task) => {
+        const sectionLabel = gSections.find((item) => item.id === task.section)?.title || task.section || "";
+        const status = task.done ? "Done" : (task.status || "todo");
+        return [
+          status,
+          task.text || "",
+          sectionLabel,
+          task.owner || "",
+          task.due || "",
+          (task.priority || "med").toUpperCase()
+        ];
+      });
+      const header = ["Status", "Task", "Section", "Owner", "Due", "Priority"];
+      const csv = [header, ...rows].map((row) => row.map(csvEscape).join(",")).join("\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "tasks.csv";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+
+    function csvEscape(value) {
+      const str = String(value ?? "");
+      if (/[",\n]/.test(str)) {
+        return `"${str.replace(/"/g, '""')}"`;
+      }
+      return str;
     }
 
     function renderMetrics() {
@@ -2519,6 +2819,14 @@
       if (!button) return;
       setActiveView(button.dataset.view);
     });
+
+    gElements.tableView.addEventListener("click", (event) => {
+      const header = event.target.closest("th[data-sort-key]");
+      if (!header) return;
+      toggleTableSort(header.dataset.sortKey);
+    });
+
+    gElements.exportCsvBtn.addEventListener("click", exportTableCsv);
 
     gElements.headerParkingBtn.addEventListener("click", () => {
       addParkingTask(gElements.headerParkingInput.value);
