@@ -1129,6 +1129,47 @@
       display: flex;
     }
 
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .modal-actions button {
+      border-radius: 999px;
+      border: 1px solid var(--stroke);
+      background: transparent;
+      color: var(--text);
+      padding: 8px 14px;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .modal-actions button.primary {
+      background: var(--accent);
+      border-color: transparent;
+      color: #151518;
+    }
+
+    .modal-form {
+      display: grid;
+      gap: 10px;
+    }
+
+    .modal-form input,
+    .modal-form select,
+    .modal-form textarea {
+      background: #0f1014;
+      border: 1px solid var(--stroke);
+      border-radius: 12px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-size: 13px;
+    }
+
     .modal {
       width: min(560px, 92vw);
       background: #0f1014;
@@ -1331,11 +1372,40 @@
       <div class="modal-list" id="oneOnOneList"></div>
     </div>
   </div>
+  <div class="modal-overlay" id="editTaskModal">
+    <div class="modal">
+      <div class="section-header" style="padding-right: 0;">
+        <div>Edit Task</div>
+        <span id="editTaskClose" style="cursor:pointer;">Close</span>
+      </div>
+      <div class="modal-form">
+        <input id="editTaskText" type="text" placeholder="Task" />
+        <input id="editTaskOwner" type="text" placeholder="Owner" />
+        <input id="editTaskDue" type="date" />
+        <select id="editTaskPriority">
+          <option value="high">High</option>
+          <option value="med">Medium</option>
+          <option value="low">Low</option>
+        </select>
+        <select id="editTaskStatus">
+          <option value="todo">To Do</option>
+          <option value="doing">In Progress</option>
+          <option value="done">Done</option>
+        </select>
+        <select id="editTaskSection"></select>
+      </div>
+      <div class="modal-actions">
+        <button id="editTaskCancel" type="button">Cancel</button>
+        <button class="primary" id="editTaskSave" type="button">Save</button>
+      </div>
+    </div>
+  </div>
   <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle theme">⚙</button>
 
   <script>
     let gLastReportHtml = "";
     let gLastReportHtmlOneNote = "";
+    let gEditingTaskId = null;
     const gThemeToggle = document.getElementById("themeToggle");
     const gSections = [
       { id: "today", title: "Today’s Priorities" },
@@ -1400,6 +1470,16 @@
       oneOnOneAssignee: document.getElementById("oneOnOneAssignee"),
       oneOnOneList: document.getElementById("oneOnOneList"),
       oneOnOneClose: document.getElementById("oneOnOneClose"),
+      editTaskModal: document.getElementById("editTaskModal"),
+      editTaskClose: document.getElementById("editTaskClose"),
+      editTaskCancel: document.getElementById("editTaskCancel"),
+      editTaskSave: document.getElementById("editTaskSave"),
+      editTaskText: document.getElementById("editTaskText"),
+      editTaskOwner: document.getElementById("editTaskOwner"),
+      editTaskDue: document.getElementById("editTaskDue"),
+      editTaskPriority: document.getElementById("editTaskPriority"),
+      editTaskStatus: document.getElementById("editTaskStatus"),
+      editTaskSection: document.getElementById("editTaskSection"),
       q1List: document.getElementById("q1List"),
       q2List: document.getElementById("q2List"),
       q3List: document.getElementById("q3List"),
@@ -1579,34 +1659,54 @@
       const tasks = getTasks();
       const current = tasks.find((task) => task.id === id);
       if (!current) return;
-      const text = window.prompt("Edit task", current.text);
-      if (text === null) return;
-      const owner = window.prompt("Owner", current.owner || "");
-      if (owner === null) return;
-      const due = window.prompt("Due date (YYYY-MM-DD)", current.due || "");
-      if (due === null) return;
-      const priority = window.prompt("Priority (high, med, low)", current.priority || "med");
-      if (priority === null) return;
-      const status = window.prompt("Status (todo, doing, done)", current.status || "todo");
-      if (status === null) return;
-      const section = window.prompt("Category", current.section || "today");
-      if (section === null) return;
+      gEditingTaskId = id;
+      gElements.editTaskText.value = current.text || "";
+      gElements.editTaskOwner.value = current.owner || "";
+      gElements.editTaskDue.value = current.due || "";
+      gElements.editTaskPriority.value = ["high", "med", "low"].includes(current.priority) ? current.priority : "med";
+      gElements.editTaskStatus.value = ["todo", "doing", "done"].includes(current.status) ? current.status : "todo";
+      gElements.editTaskSection.innerHTML = "";
+      gSections.forEach((section) => {
+        const option = document.createElement("option");
+        option.value = section.id;
+        option.textContent = section.title;
+        gElements.editTaskSection.appendChild(option);
+      });
+      gElements.editTaskSection.value = current.section || "today";
+      gElements.editTaskModal.classList.add("active");
+      gElements.editTaskText.focus();
+    }
 
+    function closeEditModal() {
+      gEditingTaskId = null;
+      gElements.editTaskModal.classList.remove("active");
+    }
+
+    function saveEditTask() {
+      if (!gEditingTaskId) return;
+      const tasks = getTasks();
+      const text = validateTaskInput(gElements.editTaskText.value);
+      const owner = gElements.editTaskOwner.value.trim();
+      const due = gElements.editTaskDue.value.trim();
+      const priority = gElements.editTaskPriority.value;
+      const status = gElements.editTaskStatus.value;
+      const section = gElements.editTaskSection.value;
       const next = tasks.map((task) => {
-        if (task.id !== id) return task;
+        if (task.id !== gEditingTaskId) return task;
         return {
           ...task,
-          text: validateTaskInput(text) || task.text,
+          text: text || task.text,
           assignee: deriveAssignee(owner),
-          owner: owner.trim(),
-          due: due.trim(),
+          owner,
+          due,
           priority: ["high", "med", "low"].includes(priority) ? priority : task.priority,
           status: ["todo", "doing", "done"].includes(status) ? status : task.status,
-          section: section.trim() || task.section,
+          section: section || task.section,
           updatedAt: Date.now()
         };
       });
       setTasks(next);
+      closeEditModal();
     }
 
     function clearDone() {
@@ -2439,6 +2539,10 @@
     gElements.oneOnOneClose.addEventListener("click", () => {
       gElements.oneOnOneModal.classList.remove("active");
     });
+
+    gElements.editTaskClose.addEventListener("click", closeEditModal);
+    gElements.editTaskCancel.addEventListener("click", closeEditModal);
+    gElements.editTaskSave.addEventListener("click", saveEditTask);
 
     gElements.todayLabel.textContent = formatDate();
     document.body.classList.toggle("focus-mode", gFilters.focus);
