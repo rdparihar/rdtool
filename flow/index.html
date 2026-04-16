@@ -148,16 +148,17 @@
     .topbar {
       background: radial-gradient(circle at 30% 30%, rgba(255, 122, 64, 0.85), transparent 65%),
         linear-gradient(160deg, #8a10b5, #cb5c5c 60%, #0a0a0d);
-      border-radius: 32px;
+      border-radius: 0 0 32px 32px;
       padding: 14px 18px;
       box-shadow: var(--shadow);
       display: grid;
       gap: 14px;
       align-self: start;
       position: sticky;
-      top: 18px;
+      top: 0;
       z-index: 4;
       border: 1px solid rgba(255, 255, 255, 0.08);
+      margin-top: -32px;
     }
 
     .topbar-compact {
@@ -170,6 +171,7 @@
       grid-template-columns: auto 1fr auto;
       gap: 16px;
       align-items: center;
+      margin-top: 10px;
     }
 
     .topbar-input {
@@ -1020,6 +1022,103 @@
 
       .bento {
         grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 900px) {
+      body {
+        padding: 18px;
+      }
+
+      .topbar {
+        padding: 12px 14px 16px;
+        margin-top: -18px;
+      }
+
+      .topbar-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .topbar-input {
+        width: 100%;
+      }
+
+      .topbar-input input {
+        font-size: 12px;
+      }
+
+      #focusToggle {
+        width: 100%;
+        justify-self: stretch;
+      }
+
+      .view-header {
+        align-items: stretch;
+      }
+
+      .filters,
+      .tab-buttons {
+        width: 100%;
+      }
+
+      .tab-buttons {
+        justify-content: flex-start;
+      }
+
+      .table-wrap {
+        border-radius: 12px;
+      }
+
+      .bento-row,
+      .bento-row.split-70-30 {
+        grid-template-columns: 1fr;
+      }
+
+      .section-shell.equal-size {
+        height: auto;
+      }
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 14px;
+      }
+
+      .topbar {
+        margin-top: -14px;
+      }
+
+      .topbar-row {
+        margin-top: 6px;
+      }
+
+      .topbar-input button {
+        padding: 6px 10px;
+      }
+
+      .view-switcher {
+        gap: 10px;
+      }
+
+      .bento {
+        gap: 16px;
+      }
+
+      .bento-row {
+        gap: 12px;
+      }
+
+      .board {
+        padding: 10px;
+      }
+
+      .section {
+        min-height: 190px;
+      }
+
+      table.task-table {
+        min-width: 560px;
       }
     }
 
