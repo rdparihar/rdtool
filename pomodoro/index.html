@@ -94,7 +94,7 @@
       display: grid;
       gap: 5px;
       grid-template-rows: 1fr auto;
-      min-height: 440px;
+      height: 440px;
     }
 
     .hero h1 {
@@ -123,12 +123,13 @@
       border-radius: 22px;
       margin-bottom: 5px;
       display: grid;
-      grid-template-rows: auto auto 1fr;
+      grid-template-rows: auto auto minmax(0, 1fr);
       height: 100%;
+      min-height: 0;
     }
 
     .hero .todo-list {
-      max-height: 140px;
+      max-height: none;
     }
 
     .panel {
@@ -306,9 +307,10 @@
     }
 
     .todo-input {
-      display: grid;
-      grid-template-columns: 1fr auto;
+      display: flex;
       gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
     }
 
     .todo-input input {
@@ -317,6 +319,19 @@
       border: 1px solid #2b2b30;
       background: #121216;
       color: var(--text);
+      height: 40px;
+      flex: 1 1 200px;
+    }
+
+    .todo-input select {
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #2b2b30;
+      background: #121216;
+      color: var(--text);
+      height: 40px;
+      min-width: 110px;
+      flex: 0 0 auto;
     }
 
     .todo-input button {
@@ -329,11 +344,16 @@
       font-size: 12px;
       letter-spacing: 0.1em;
       text-transform: uppercase;
+      height: 40px;
+      min-width: 72px;
+      flex: 0 0 auto;
     }
 
     .todo-list {
-      display: grid;
+      display: flex;
+      flex-direction: column;
       gap: 8px;
+      justify-content: flex-start;
       overflow-y: auto;
       padding-right: 6px;
       min-height: 0;
@@ -370,6 +390,13 @@
       border-radius: 10px;
       background: #141418;
       font-size: 13px;
+      height: 58px;
+    }
+
+    .todo-text {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .todo-item input[type="checkbox"] {
@@ -567,6 +594,24 @@
       gap: 24px;
     }
 
+    body.fullscreen .hero,
+    body.fullscreen .panel {
+      display: none;
+    }
+
+    body.fullscreen .app {
+      grid-template-columns: 1fr;
+      max-width: 900px;
+    }
+
+    body.fullscreen .timer {
+      place-items: center;
+    }
+
+    body.fullscreen .card.round {
+      min-height: 420px;
+    }
+
     .status {
       font-size: 12px;
       color: var(--muted);
@@ -611,12 +656,17 @@
   <main class="app">
     <section class="hero">
       <div class="card todo-card">
-        <h3>Todo List</h3>
+        <h3>Today’s Priorities</h3>
         <div class="todo-input">
-          <input id="todoInput" type="text" placeholder="Add a task" />
-          <button id="addTodoBtn" type="button">Add</button>
+          <input id="todayPriorityInput" type="text" placeholder="Add a priority" />
+          <select id="todayPriorityLevel" aria-label="Priority">
+            <option value="high">High</option>
+            <option value="med" selected>Medium</option>
+            <option value="low">Low</option>
+          </select>
+          <button id="addPriorityBtn" type="button">Add</button>
         </div>
-        <div class="todo-list" id="todoList"></div>
+        <div class="todo-list" id="todayPriorityList"></div>
       </div>
       <div class="hero-header">
         <h1>Pomodoro<br /><span>Timer</span></h1>
@@ -652,6 +702,7 @@
             <button class="icon-btn" id="resetBtn" title="Reset">&#8634;</button>
             <button class="btn" id="toggleBtn">Start</button>
             <button class="icon-btn" id="settingsBtn" title="Settings">&#9881;</button>
+            <button class="icon-btn" id="fullscreenBtn" title="Focus mode">&#x26F6;</button>
           </div>
           <div class="footer" id="cycleLabel">Session 1 of 4</div>
           <div class="stats" id="statsLabel">Today: 0 focus</div>
@@ -774,6 +825,7 @@
       toggleBtn: document.getElementById("toggleBtn"),
       resetBtn: document.getElementById("resetBtn"),
       settingsBtn: document.getElementById("settingsBtn"),
+      fullscreenBtn: document.getElementById("fullscreenBtn"),
       settingsPanel: document.getElementById("settingsPanel"),
       closeSettings: document.getElementById("closeSettings"),
       saveSettings: document.getElementById("saveSettings"),
@@ -789,9 +841,10 @@
       cycleLabel: document.getElementById("cycleLabel"),
       statsLabel: document.getElementById("statsLabel"),
       toastContainer: document.getElementById("toastContainer"),
-      todoInput: document.getElementById("todoInput"),
-      addTodoBtn: document.getElementById("addTodoBtn"),
-      todoList: document.getElementById("todoList"),
+      todayPriorityList: document.getElementById("todayPriorityList"),
+      todayPriorityInput: document.getElementById("todayPriorityInput"),
+      todayPriorityLevel: document.getElementById("todayPriorityLevel"),
+      addPriorityBtn: document.getElementById("addPriorityBtn"),
       focusMinutes: document.getElementById("focusMinutes"),
       shortMinutes: document.getElementById("shortMinutes"),
       longMinutes: document.getElementById("longMinutes")
@@ -979,63 +1032,67 @@
       }, 3000);
     }
 
-    function getTodos() {
-      return JSON.parse(localStorage.getItem("pomodoroTodos") || "[]");
+    function getTrackerTasks() {
+      return JSON.parse(localStorage.getItem("emTasksMinimal") || "[]");
     }
 
-    function setTodos(items) {
-      localStorage.setItem("pomodoroTodos", JSON.stringify(items));
-      renderTodos();
+    function setTrackerTasks(items) {
+      localStorage.setItem("emTasksMinimal", JSON.stringify(items));
+      renderTodayPriorities();
     }
 
-    function addTodo(text) {
+    function addTrackerPriority(text, priority) {
       const trimmed = text.trim();
       if (!trimmed) return;
-      const todos = getTodos();
-      todos.unshift({ id: Date.now(), text: trimmed, done: false });
-      setTodos(todos);
-      elements.todoInput.value = "";
+      const now = Date.now();
+      const tasks = getTrackerTasks();
+      tasks.unshift({
+        id: now,
+        text: trimmed.slice(0, 160),
+        section: "today",
+        priority: ["high", "med", "low"].includes(priority) ? priority : "med",
+        status: "todo",
+        assignee: "",
+        owner: "",
+        due: "",
+        createdAt: now,
+        updatedAt: now,
+        done: false
+      });
+      setTrackerTasks(tasks);
+      elements.todayPriorityInput.value = "";
     }
 
-    function toggleTodo(id) {
-      const todos = getTodos();
-      const next = todos.map((todo) => (todo.id === id ? { ...todo, done: !todo.done } : todo));
-      setTodos(next);
+    function toggleTrackerTask(id) {
+      const tasks = getTrackerTasks();
+      const now = Date.now();
+      const next = tasks.map((task) => (task.id === id ? { ...task, done: !task.done, updatedAt: now } : task));
+      setTrackerTasks(next);
     }
 
-    function removeTodo(id) {
-      const todos = getTodos().filter((todo) => todo.id !== id);
-      setTodos(todos);
-    }
-
-    function renderTodos() {
-      const todos = getTodos();
-      elements.todoList.innerHTML = "";
-      if (!todos.length) {
+    function renderTodayPriorities() {
+      const tasks = getTrackerTasks().filter((task) => task.section === "today");
+      elements.todayPriorityList.innerHTML = "";
+      if (!tasks.length) {
         const empty = document.createElement("div");
         empty.className = "status";
-        empty.textContent = "No tasks yet";
-        elements.todoList.appendChild(empty);
+        empty.textContent = "No priorities yet";
+        elements.todayPriorityList.appendChild(empty);
         return;
       }
-      todos.forEach((todo) => {
+      tasks.forEach((task) => {
         const item = document.createElement("div");
-        item.className = `todo-item${todo.done ? " done" : ""}`;
+        item.className = `todo-item${task.done ? " done" : ""}`;
         const checkbox = document.createElement("input");
         checkbox.type = "checkbox";
-        checkbox.checked = todo.done;
-        checkbox.addEventListener("change", () => toggleTodo(todo.id));
+        checkbox.checked = task.done;
+        checkbox.addEventListener("change", () => toggleTrackerTask(task.id));
         const text = document.createElement("div");
         text.className = "todo-text";
-        text.textContent = todo.text;
-        const remove = document.createElement("button");
-        remove.type = "button";
-        remove.textContent = "✕";
-        remove.addEventListener("click", () => removeTodo(todo.id));
+        text.textContent = task.text;
         item.appendChild(checkbox);
         item.appendChild(text);
-        item.appendChild(remove);
-        elements.todoList.appendChild(item);
+        elements.todayPriorityList.appendChild(item);
       });
     }
 
@@ -1115,11 +1172,27 @@
       }
     });
 
-    elements.addTodoBtn.addEventListener("click", () => addTodo(elements.todoInput.value));
-    elements.todoInput.addEventListener("keydown", (event) => {
+    elements.addPriorityBtn.addEventListener("click", () => {
+      addTrackerPriority(elements.todayPriorityInput.value, elements.todayPriorityLevel.value);
+    });
+    elements.todayPriorityInput.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
-        addTodo(elements.todoInput.value);
+        addTrackerPriority(elements.todayPriorityInput.value, elements.todayPriorityLevel.value);
       }
+    });
+
+
+    elements.fullscreenBtn.addEventListener("click", () => {
+      const isFullscreen = Boolean(document.fullscreenElement);
+      if (!isFullscreen) {
+        document.documentElement.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    });
+
+    document.addEventListener("fullscreenchange", () => {
+      document.body.classList.toggle("fullscreen", Boolean(document.fullscreenElement));
     });
 
     const tabs = document.querySelectorAll(".pill-tab");
@@ -1162,7 +1235,7 @@
       if (event.key === "3") resetTimer("longBreak");
     });
 
-    renderTodos();
+    renderTodayPriorities();
     render();
   </script>
 </body>
