@@ -395,6 +395,38 @@
       background: rgba(14, 15, 19, 0.8);
     }
 
+    .parking-list {
+      display: grid;
+      gap: 8px;
+      max-height: 360px;
+      overflow-y: auto;
+      padding-right: 6px;
+    }
+
+    .parking-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(14, 15, 19, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 13px;
+    }
+
+    .parking-item button {
+      background: transparent;
+      border: 1px solid var(--stroke);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
     .subtitle {
       color: var(--muted);
       font-size: 14px;
@@ -1012,6 +1044,20 @@
       transition: opacity 0.5s ease, filter 0.5s ease;
     }
 
+    .focus-only {
+      display: none;
+    }
+
+    body.focus-mode #bentoGrid,
+    body.focus-mode #viewSwitcher,
+    body.focus-mode .theme-toggle {
+      display: none;
+    }
+
+    body.focus-mode .focus-only {
+      display: block;
+    }
+
     .progress-ring {
       width: 28px;
       height: 28px;
@@ -1179,15 +1225,15 @@
           <div class="metrics-grid" id="metricsPanel"></div>
         </div>
       </div>
-      <div class="bento-row">
-        <div id="todayPanel"></div>
-        <div id="parkingPanel"></div>
-      </div>
       <div class="bento-ghost">
         <div id="peoplePanel"></div>
         <div id="weekPanel"></div>
         <div id="rightCol"></div>
       </div>
+    </section>
+
+    <section class="section-shell glass card-hover transition-all duration-200 hover:scale-[1.02] focus-only" id="focusTodayShell">
+      <div id="focusTodaySlot"></div>
     </section>
 
     <div class="section-shell glass view-switcher" id="viewSwitcher">
@@ -1199,6 +1245,7 @@
           <button class="ghost" data-view="report" type="button">Report</button>
           <button class="ghost" data-view="matrix" type="button">Matrix</button>
           <button class="ghost" data-view="kanban" type="button">Kanban</button>
+          <button class="ghost" data-view="parking" type="button">Parking</button>
         </div>
       </div>
       <div class="view-panel" id="boardView">
@@ -1263,6 +1310,15 @@
           </div>
         </section>
       </div>
+      <div class="view-panel is-hidden" id="parkingView">
+        <section class="section-shell glass card-hover transition-all duration-200 hover:scale-[1.02]" id="parkingShell">
+          <div class="section-header">
+            <div>Parking Lot</div>
+            <span id="parkingCount">0</span>
+          </div>
+          <div class="parking-list" id="parkingList"></div>
+        </section>
+      </div>
     </div>
   </main>
   <div class="modal-overlay" id="oneOnOneModal">
@@ -1304,15 +1360,18 @@
       centerCol: document.getElementById("centerCol"),
       rightCol: document.getElementById("rightCol"),
       peoplePanel: document.getElementById("peoplePanel"),
-      parkingPanel: document.getElementById("parkingPanel"),
-      todayPanel: document.getElementById("todayPanel"),
       weekPanel: document.getElementById("weekPanel"),
       viewTabs: document.getElementById("viewTabs"),
       boardView: document.getElementById("boardView"),
       reportView: document.getElementById("reportView"),
       matrixView: document.getElementById("matrixView"),
       kanbanView: document.getElementById("kanbanView"),
+      parkingView: document.getElementById("parkingView"),
+      parkingList: document.getElementById("parkingList"),
+      parkingCount: document.getElementById("parkingCount"),
       metricsPanel: document.getElementById("metricsPanel"),
+      focusTodayShell: document.getElementById("focusTodayShell"),
+      focusTodaySlot: document.getElementById("focusTodaySlot"),
       headerParkingInput: document.getElementById("headerParkingInput"),
       headerParkingBtn: document.getElementById("headerParkingBtn"),
       taskInput: document.getElementById("taskInput"),
@@ -1827,26 +1886,48 @@
       const tasks = getTasks();
       gElements.board.innerHTML = "";
       gElements.peoplePanel.innerHTML = "";
-      gElements.parkingPanel.innerHTML = "";
-      gElements.todayPanel.innerHTML = "";
       gElements.weekPanel.innerHTML = "";
 
-      gElements.rightCol.classList.toggle("focus-obscure", gFilters.focus);
-      gElements.viewTabs.closest(".section-shell").classList.toggle("focus-obscure", gFilters.focus);
-
-      gSections.forEach((section) => {
-        const focusDim = gFilters.focus && !["today", "parking"].includes(section.id);
+      const boardSections = gSections.filter((section) => section.id !== "parking");
+      boardSections.forEach((section) => {
         const isPrimary = section.id === "today";
-        const panelCard = buildSectionCard(section, tasks, { focusDim, primary: isPrimary });
-        const boardCard = buildSectionCard(section, tasks, { focusDim });
-
-        if (section.id === "today") {
-          gElements.todayPanel.appendChild(panelCard);
-        } else if (section.id === "parking") {
-          gElements.parkingPanel.appendChild(panelCard);
-        }
-
+        const boardCard = buildSectionCard(section, tasks, { focusDim: false, primary: isPrimary });
         gElements.board.appendChild(boardCard);
+      });
+    }
+
+    function renderFocusToday() {
+      const tasks = getTasks();
+      gElements.focusTodaySlot.innerHTML = "";
+      const todaySection = gSections.find((section) => section.id === "today");
+      if (!todaySection) return;
+      const focusCard = buildSectionCard(todaySection, tasks, { primary: true });
+      gElements.focusTodaySlot.appendChild(focusCard);
+    }
+
+    function renderParkingView() {
+      const tasks = getTasks().filter((task) => task.section === "parking" && passesFilters(task));
+      gElements.parkingList.innerHTML = "";
+      gElements.parkingCount.textContent = String(tasks.length);
+      if (!tasks.length) {
+        const empty = document.createElement("div");
+        empty.className = "subtitle";
+        empty.textContent = "No parking items";
+        gElements.parkingList.appendChild(empty);
+        return;
+      }
+      tasks.forEach((task) => {
+        const row = document.createElement("div");
+        row.className = "parking-item";
+        const text = document.createElement("div");
+        text.textContent = task.text;
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.textContent = "Remove";
+        remove.addEventListener("click", () => removeTask(task.id));
+        row.appendChild(text);
+        row.appendChild(remove);
+        gElements.parkingList.appendChild(row);
       });
     }
 
@@ -1855,6 +1936,8 @@
       renderBoard();
       renderMatrix();
       renderKanban();
+      renderParkingView();
+      renderFocusToday();
       renderMetrics();
       buildReport(gElements.reportRangeLabel.textContent || "Today", true);
     }
@@ -1864,7 +1947,8 @@
         board: gElements.boardView,
         report: gElements.reportView,
         matrix: gElements.matrixView,
-        kanban: gElements.kanbanView
+        kanban: gElements.kanbanView,
+        parking: gElements.parkingView
       };
       Object.entries(views).forEach(([key, el]) => {
         if (!el) return;
@@ -2327,6 +2411,7 @@
     gElements.focusToggle.addEventListener("click", () => {
       gFilters.focus = !gFilters.focus;
       gElements.focusToggle.classList.toggle("active", gFilters.focus);
+      document.body.classList.toggle("focus-mode", gFilters.focus);
       render();
     });
     gElements.viewTabs.addEventListener("click", (event) => {
@@ -2356,6 +2441,7 @@
     });
 
     gElements.todayLabel.textContent = formatDate();
+    document.body.classList.toggle("focus-mode", gFilters.focus);
     buildSelectOptions();
     setTodayDate();
     setActiveView("board");
