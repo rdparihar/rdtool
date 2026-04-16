@@ -1411,6 +1411,33 @@
       color: #cfe4ff;
     }
 
+    .task-table .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--stroke);
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .task-table .status-pill.todo {
+      border-color: rgba(120, 140, 170, 0.6);
+      color: #c7d2e0;
+    }
+
+    .task-table .status-pill.doing {
+      border-color: rgba(255, 206, 128, 0.6);
+      color: #ffe6b5;
+    }
+
+    .task-table .status-pill.done {
+      border-color: rgba(102, 209, 158, 0.6);
+      color: #c9f0dc;
+    }
+
     .table-actions {
       display: flex;
       gap: 8px;
@@ -2462,7 +2489,11 @@
       sorted.forEach((task) => {
         const row = document.createElement("tr");
         const status = document.createElement("td");
-        status.textContent = task.done ? "Done" : (task.status || "todo");
+        const statusPill = document.createElement("span");
+        const statusKey = task.done ? "done" : (task.status || "todo");
+        statusPill.className = `status-pill ${statusKey}`;
+        statusPill.textContent = statusKey.toUpperCase();
+        status.appendChild(statusPill);
         const text = document.createElement("td");
         text.textContent = task.text;
         const section = document.createElement("td");
