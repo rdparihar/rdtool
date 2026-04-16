@@ -324,6 +324,22 @@
       color: #151518;
     }
 
+    .clear-done-animate {
+      animation: clearDonePulse 0.4s ease;
+    }
+
+    @keyframes clearDonePulse {
+      0% {
+        transform: scale(1);
+      }
+      45% {
+        transform: scale(1.05);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+
     .matrix {
       background: var(--card);
       border-radius: var(--radius);
@@ -1170,6 +1186,12 @@
       font-size: 13px;
     }
 
+    .modal-warning {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
     .modal {
       width: min(560px, 92vw);
       background: #0f1014;
@@ -1518,6 +1540,21 @@
       <div class="modal-list" id="oneOnOneList"></div>
     </div>
   </div>
+  <div class="modal-overlay" id="clearDoneModal">
+    <div class="modal">
+      <div class="section-header" style="padding-right: 0;">
+        <div>Clear Done</div>
+        <span id="clearDoneClose" style="cursor:pointer;">Close</span>
+      </div>
+      <div class="modal-warning">
+        Have you saved the report? This will delete completed items permanently.
+      </div>
+      <div class="modal-actions">
+        <button id="clearDoneCancel" type="button">Cancel</button>
+        <button class="primary" id="clearDoneConfirm" type="button">Clear Done</button>
+      </div>
+    </div>
+  </div>
   <div class="modal-overlay" id="editTaskModal">
     <div class="modal">
       <div class="section-header" style="padding-right: 0;">
@@ -1614,6 +1651,10 @@
       copyReportOneNoteBtn: document.getElementById("copyReportOneNoteBtn"),
       dailyReportBtn: document.getElementById("dailyReportBtn"),
       weeklyReportBtn: document.getElementById("weeklyReportBtn"),
+      clearDoneModal: document.getElementById("clearDoneModal"),
+      clearDoneClose: document.getElementById("clearDoneClose"),
+      clearDoneCancel: document.getElementById("clearDoneCancel"),
+      clearDoneConfirm: document.getElementById("clearDoneConfirm"),
       oneOnOneModal: document.getElementById("oneOnOneModal"),
       oneOnOneAssignee: document.getElementById("oneOnOneAssignee"),
       oneOnOneList: document.getElementById("oneOnOneList"),
@@ -1860,9 +1901,31 @@
       closeEditModal();
     }
 
-    function clearDone() {
+    function clearDone(animate = false) {
       const tasks = getTasks().filter((task) => !task.done);
       setTasks(tasks);
+      if (animate) {
+        triggerClearDoneAnimation();
+      }
+    }
+
+    function openClearDoneModal() {
+      gElements.clearDoneModal.classList.add("active");
+    }
+
+    function closeClearDoneModal() {
+      gElements.clearDoneModal.classList.remove("active");
+    }
+
+    function confirmClearDone() {
+      clearDone(true);
+      closeClearDoneModal();
+    }
+
+    function triggerClearDoneAnimation() {
+      gElements.clearDoneBtn.classList.remove("clear-done-animate");
+      void gElements.clearDoneBtn.offsetWidth;
+      gElements.clearDoneBtn.classList.add("clear-done-animate");
     }
 
     function passesFilters(task) {
@@ -2747,7 +2810,7 @@
     gElements.taskInput.addEventListener("keydown", (event) => {
       if (event.key === "Enter") addTask();
     });
-    gElements.clearDoneBtn.addEventListener("click", clearDone);
+    gElements.clearDoneBtn.addEventListener("click", openClearDoneModal);
     gElements.optionsToggle.addEventListener("click", () => {
       const isOpen = gElements.optionsPanel.classList.toggle("active");
       gElements.optionsToggle.classList.toggle("is-open", isOpen);
@@ -2843,6 +2906,10 @@
     gElements.oneOnOneAssignee.addEventListener("change", (event) => {
       updateOneOnOneList(event.target.value);
     });
+
+    gElements.clearDoneClose.addEventListener("click", closeClearDoneModal);
+    gElements.clearDoneCancel.addEventListener("click", closeClearDoneModal);
+    gElements.clearDoneConfirm.addEventListener("click", confirmClearDone);
 
     gElements.oneOnOneClose.addEventListener("click", () => {
       gElements.oneOnOneModal.classList.remove("active");
