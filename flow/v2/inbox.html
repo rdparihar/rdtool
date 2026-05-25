@@ -1,0 +1,1521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flow -  Work Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root {
+      --app-bg: #f3f6fb;
+      --app-text: #0f172a;
+      --panel-bg: #ffffff;
+      --panel-border: #e2e8f0;
+      --panel-muted: #64748b;
+    }
+
+    * { box-sizing: border-box; }
+    body { background: var(--app-bg); color: var(--app-text); }
+    .panel { background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 14px; }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border: 1px solid transparent;
+    }
+    .status-todo {
+      color: #7c2d12;
+      background: #ffedd5;
+      border-color: #fed7aa;
+    }
+    .status-doing {
+      color: #1e3a8a;
+      background: #dbeafe;
+      border-color: #bfdbfe;
+    }
+    .status-done {
+      color: #14532d;
+      background: #dcfce7;
+      border-color: #bbf7d0;
+    }
+
+    .avatar-chip {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      background: #e2e8f0;
+      color: #334155;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      border: 1px solid #cbd5e1;
+    }
+    .mini-ring {
+      width: 54px;
+      height: 54px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      background: conic-gradient(#2563eb var(--deg), #dbeafe 0);
+    }
+    .mini-ring > span {
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      background: #ffffff;
+      display: grid;
+      place-items: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+    }
+
+    .dark {
+      --app-bg: #0b1220;
+      --app-text: #e2e8f0;
+      --panel-bg: #111a2e;
+      --panel-border: #23304a;
+      --panel-muted: #94a3b8;
+    }
+
+    .dark .text-slate-900,
+    .dark .text-slate-800 {
+      color: #e2e8f0 !important;
+    }
+    .dark .text-slate-700,
+    .dark .text-slate-600,
+    .dark .text-slate-500 {
+      color: #94a3b8 !important;
+    }
+    .dark .bg-slate-50,
+    .dark .bg-white {
+      background: #0f172a !important;
+    }
+    .dark .border-slate-200 {
+      border-color: #334155 !important;
+    }
+    .dark input,
+    .dark select,
+    .dark textarea {
+      background: #0f172a !important;
+      color: #e2e8f0 !important;
+      border-color: #334155 !important;
+    }
+    .dark input::placeholder,
+    .dark textarea::placeholder {
+      color: #64748b;
+    }
+    .dark .avatar-chip {
+      background: #1e293b;
+      color: #cbd5e1;
+      border-color: #334155;
+    }
+    .dark .status-todo {
+      color: #fdba74;
+      background: rgba(124, 45, 18, 0.35);
+      border-color: rgba(251, 146, 60, 0.45);
+    }
+    .dark .status-doing {
+      color: #93c5fd;
+      background: rgba(30, 58, 138, 0.35);
+      border-color: rgba(59, 130, 246, 0.45);
+    }
+    .dark .status-done {
+      color: #86efac;
+      background: rgba(20, 83, 45, 0.35);
+      border-color: rgba(34, 197, 94, 0.45);
+    }
+  </style>
+</head>
+<body class="min-h-screen font-sans">
+  <div class="flex h-screen">
+    <aside class="w-64 border-r border-slate-200 bg-white p-4 overflow-y-auto">
+      <div class="mb-8">
+        <h1 class="text-2xl font-bold text-slate-900">Flow</h1>
+        <p class="text-xs text-slate-500 mt-1"> Work Console</p>
+      </div>
+
+      <nav class="space-y-2" id="sidebarNav">
+        <button data-panel="board" class="nav-btn w-full text-left px-3 py-2 rounded-lg text-sm font-medium bg-blue-100 text-blue-700">Workboard</button>
+        <button data-panel="buckets" class="nav-btn w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-100">Weekly Buckets</button>
+        <button data-panel="adhd" class="nav-btn w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-100">ADHD System</button>
+        <button data-panel="report" class="nav-btn w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-100">Weekly/Monthly Report</button>
+        <button data-panel="inbox" class="nav-btn w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-100">Inbox</button>
+      </nav>
+
+      <div class="border-t border-slate-200 pt-4 mt-6 space-y-2">
+        <p class="text-xs font-semibold text-slate-600 uppercase tracking-wider">Settings</p>
+        <button id="lightModeBtn" class="flex items-center gap-2 w-full px-3 py-2 rounded border border-slate-200 text-sm font-medium text-slate-700 hover:bg-blue-50 transition">
+          <i data-lucide="sun" class="w-4 h-4"></i>Light
+        </button>
+        <button id="darkModeBtn" class="flex items-center gap-2 w-full px-3 py-2 rounded border border-slate-200 text-sm font-medium text-slate-700 hover:bg-blue-50 transition">
+          <i data-lucide="moon" class="w-4 h-4"></i>Dark
+        </button>
+      </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col overflow-hidden">
+      <header class="panel rounded-none border-x-0 border-t-0 px-6 py-4">
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <h2 id="sectionTitle" class="text-lg font-bold text-slate-900">Workboard</h2>
+            <p class="text-sm text-slate-500 mt-1" id="todayLabel"></p>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="panel px-3 py-2 flex items-center gap-3">
+              <div class="mini-ring" id="openRing" style="--deg: 0deg"><span id="openRingLabel">0</span></div>
+              <div class="text-xs text-slate-600 leading-tight">Open</div>
+            </div>
+            <div class="panel px-3 py-2 flex items-center gap-3">
+              <div class="mini-ring" id="doneRing" style="--deg: 0deg"><span id="doneRingLabel">0</span></div>
+              <div class="text-xs text-slate-600 leading-tight">Done</div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="flex-1 overflow-auto p-6 space-y-4 bg-slate-50">
+        <section class="panel p-4">
+          <div class="flex items-center justify-between gap-3 flex-wrap">
+            <div class="flex items-center gap-2 w-full md:w-auto md:flex-1">
+              <input id="qcText" type="text" placeholder="Quick capture: dump anything in one line..." class="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm bg-white" />
+              <button id="qcAddBtn" class="px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700">Add</button>
+            </div>
+            <button id="qcToggleBtn" class="px-3 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-100">More Details</button>
+          </div>
+
+          <div id="qcDetails" class="hidden mt-3 grid grid-cols-1 md:grid-cols-5 gap-2">
+            <select id="qcCategory" class="border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white"></select>
+            <input id="qcOwner" type="text" placeholder="Owner" class="border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white" />
+            <input id="qcDue" type="date" class="border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white" />
+            <select id="qcPriority" class="border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white">
+              <option value="high">High</option>
+              <option value="med" selected>Medium</option>
+              <option value="low">Low</option>
+            </select>
+            <select id="qcStatus" class="border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white">
+              <option value="todo" selected>To Do</option>
+              <option value="doing">In Progress</option>
+              <option value="done">Done</option>
+            </select>
+          </div>
+        </section>
+
+        <section class="panel p-3">
+          <div class="flex flex-wrap items-center gap-3">
+            <div class="flex flex-wrap items-center gap-2" id="statusTabs">
+              <button data-status="all" class="status-btn px-3 py-2 rounded-lg text-xs font-semibold bg-blue-100 text-blue-700">All</button>
+              <button data-status="todo" class="status-btn px-3 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100">To Do</button>
+              <button data-status="doing" class="status-btn px-3 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100">In Progress</button>
+              <button data-status="done" class="status-btn px-3 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100">Done</button>
+            </div>
+
+            <div class="ml-auto flex items-center gap-2" id="workViewTabs">
+              <button data-work-view="board" class="work-view-btn px-3 py-2 rounded-lg text-xs font-semibold bg-blue-100 text-blue-700">Board</button>
+              <button data-work-view="table" class="work-view-btn px-3 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100">Table</button>
+              <button data-work-view="kanban" class="work-view-btn px-3 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100">Kanban</button>
+              <button id="downloadCsvBtn" class="px-3 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-100">Download Task List</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="boardPanel" class="panel p-4 space-y-3"></section>
+
+        <section id="bucketsPanel" class="panel p-4 space-y-3 hidden"></section>
+
+        <section id="adhdPanel" class="panel p-4 space-y-4 hidden"></section>
+
+        <section id="reportPanel" class="panel p-4 space-y-3 hidden">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <div class="flex gap-2">
+              <button data-period="weekly" class="report-period px-3 py-2 rounded-lg text-xs font-semibold bg-blue-100 text-blue-700">Weekly</button>
+              <button data-period="monthly" class="report-period px-3 py-2 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-100">Monthly</button>
+            </div>
+            <button id="copyReportBtn" class="px-3 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-100">Copy Report</button>
+          </div>
+          <textarea id="reportOutput" class="w-full h-72 border border-slate-200 rounded-lg p-3 text-sm bg-white" readonly></textarea>
+        </section>
+
+        <section id="inboxPanel" class="panel p-4 space-y-3 hidden">
+          <div class="flex items-center justify-between">
+            <h3 class="font-semibold text-slate-900">Inbox</h3>
+            <span class="text-xs text-slate-500"><span id="inboxCount">0</span> items</span>
+          </div>
+          <div id="inboxList" class="space-y-2"></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div class="fixed inset-0 z-50 hidden items-center justify-center bg-black/45" id="editTaskModal">
+    <div class="panel w-[min(420px,92vw)] p-5">
+      <h3 class="text-lg font-bold mb-4">Edit Task</h3>
+      <div class="space-y-3">
+        <input id="editTaskText" type="text" placeholder="Task" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+        <select id="editTaskCategory" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"></select>
+        <input id="editTaskOwner" type="text" placeholder="Owner" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+        <input id="editTaskDue" type="date" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+        <select id="editTaskPriority" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+          <option value="high">High</option>
+          <option value="med">Medium</option>
+          <option value="low">Low</option>
+        </select>
+        <select id="editTaskStatus" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+          <option value="todo">To Do</option>
+          <option value="doing">In Progress</option>
+          <option value="done">Done</option>
+        </select>
+      </div>
+      <div class="flex justify-end gap-2 mt-5">
+        <button id="editTaskCancel" class="px-4 py-2 border border-slate-200 rounded-lg text-sm hover:bg-slate-100">Cancel</button>
+        <button id="editTaskSave" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let gEditingTaskId = null;
+    let gCurrentPanel = "board";
+    let gWorkView = "board";
+    let gCurrentCategoryFilter = "all";
+    let gStatusFilter = "all";
+    let gReportPeriod = "weekly";
+    let gFocusLockEnabled = false;
+    let gFocusLockTaskId = null;
+    let gDelegateTemplateOwner = "";
+    let gDelegateTemplateDue = "";
+
+    const gDefaultBuckets = [
+      { id: 1, title: "Go to prod checklist", owner: "Me", weeklyUpdate: "", lastUpdatedAt: null },
+      { id: 2, title: "DARE release automation", owner: "Kullayappa", weeklyUpdate: "", lastUpdatedAt: null },
+      { id: 3, title: "Non PROD Automation POC", owner: "Teja", weeklyUpdate: "", lastUpdatedAt: null },
+      { id: 4, title: "Automated INC", owner: "Nikitha", weeklyUpdate: "", lastUpdatedAt: null }
+    ];
+
+    const gCategories = [
+      { id: "inbox", title: "Inbox" },
+      { id: "today", title: "Today Priorities" },
+      { id: "week", title: "This Week" },
+      { id: "team", title: "Team Follow-ups" },
+      { id: "risks", title: "Risks / Blockers" },
+      { id: "accomplishments", title: "Accomplishments" },
+      { id: "next", title: "Next Steps" }
+    ];
+
+    const gElements = {
+      sidebarNav: document.getElementById("sidebarNav"),
+      sectionTitle: document.getElementById("sectionTitle"),
+      todayLabel: document.getElementById("todayLabel"),
+      openRing: document.getElementById("openRing"),
+      doneRing: document.getElementById("doneRing"),
+      openRingLabel: document.getElementById("openRingLabel"),
+      doneRingLabel: document.getElementById("doneRingLabel"),
+      qcText: document.getElementById("qcText"),
+      qcAddBtn: document.getElementById("qcAddBtn"),
+      qcToggleBtn: document.getElementById("qcToggleBtn"),
+      qcDetails: document.getElementById("qcDetails"),
+      qcCategory: document.getElementById("qcCategory"),
+      qcOwner: document.getElementById("qcOwner"),
+      qcDue: document.getElementById("qcDue"),
+      qcPriority: document.getElementById("qcPriority"),
+      qcStatus: document.getElementById("qcStatus"),
+      statusTabs: document.getElementById("statusTabs"),
+      workViewTabs: document.getElementById("workViewTabs"),
+      downloadCsvBtn: document.getElementById("downloadCsvBtn"),
+      boardPanel: document.getElementById("boardPanel"),
+      bucketsPanel: document.getElementById("bucketsPanel"),
+      adhdPanel: document.getElementById("adhdPanel"),
+      reportPanel: document.getElementById("reportPanel"),
+      inboxPanel: document.getElementById("inboxPanel"),
+      reportOutput: document.getElementById("reportOutput"),
+      copyReportBtn: document.getElementById("copyReportBtn"),
+      inboxCount: document.getElementById("inboxCount"),
+      inboxList: document.getElementById("inboxList"),
+      lightModeBtn: document.getElementById("lightModeBtn"),
+      darkModeBtn: document.getElementById("darkModeBtn"),
+      editTaskModal: document.getElementById("editTaskModal"),
+      editTaskText: document.getElementById("editTaskText"),
+      editTaskCategory: document.getElementById("editTaskCategory"),
+      editTaskOwner: document.getElementById("editTaskOwner"),
+      editTaskDue: document.getElementById("editTaskDue"),
+      editTaskPriority: document.getElementById("editTaskPriority"),
+      editTaskStatus: document.getElementById("editTaskStatus"),
+      editTaskCancel: document.getElementById("editTaskCancel"),
+      editTaskSave: document.getElementById("editTaskSave")
+    };
+
+    function getStore(key, fallback) {
+      try {
+        const stored = JSON.parse(localStorage.getItem(key) || "null");
+        return stored ?? fallback;
+      } catch (error) {
+        return fallback;
+      }
+    }
+
+    function setStore(key, value) {
+      localStorage.setItem(key, JSON.stringify(value));
+    }
+
+    function normalizeTask(task) {
+      const safeStatus = ["todo", "doing", "done"].includes(task.status) ? task.status : (task.done ? "done" : "todo");
+      const safeDone = typeof task.done === "boolean" ? task.done : safeStatus === "done";
+      return {
+        ...task,
+        id: task.id || Date.now(),
+        text: (task.text || "").toString(),
+        category: task.category || task.section || "inbox",
+        status: safeStatus,
+        done: safeDone,
+        owner: task.owner || "",
+        due: task.due || "",
+        priority: task.priority || "med",
+        createdAt: task.createdAt || Date.now(),
+        updatedAt: task.updatedAt || Date.now()
+      };
+    }
+
+    function getTasks() {
+      let tasks = getStore("emTasksMinimal", null);
+      if (!Array.isArray(tasks)) {
+        tasks = getStore("emTasks", null);
+      }
+      if (!Array.isArray(tasks)) {
+        tasks = getStore("flowTasks", null);
+      }
+      if (!Array.isArray(tasks)) {
+        return [];
+      }
+      return tasks.map((task) => normalizeTask(task));
+    }
+
+    function setTasks(tasks) {
+      setStore("emTasksMinimal", tasks);
+      render();
+    }
+
+    function getBuckets() {
+      const buckets = getStore("emWeeklyBuckets", null);
+      if (!Array.isArray(buckets) || !buckets.length) {
+        return gDefaultBuckets;
+      }
+      return buckets;
+    }
+
+    function setBuckets(buckets) {
+      setStore("emWeeklyBuckets", buckets);
+      renderBuckets();
+    }
+
+    function initBucketsIfNeeded() {
+      const existing = getStore("emWeeklyBuckets", null);
+      if (Array.isArray(existing) && existing.length) {
+        return;
+      }
+      setStore("emWeeklyBuckets", gDefaultBuckets);
+    }
+
+    function addBucket(bucketName, ownerName) {
+      const cleanTitle = bucketName.trim();
+      if (!cleanTitle) {
+        return;
+      }
+      const buckets = getBuckets();
+      const nextBucket = {
+        id: Date.now(),
+        title: cleanTitle,
+        owner: ownerName.trim() || "Unassigned",
+        weeklyUpdate: "",
+        lastUpdatedAt: null
+      };
+      setBuckets([nextBucket, ...buckets]);
+    }
+
+    function updateBucketField(bucketId, fieldName, fieldValue) {
+      const buckets = getBuckets().map((bucket) => {
+        if (bucket.id !== bucketId) {
+          return bucket;
+        }
+        const updatedBucket = {
+          ...bucket,
+          [fieldName]: fieldValue
+        };
+        if (fieldName === "weeklyUpdate") {
+          updatedBucket.lastUpdatedAt = Date.now();
+        }
+        return updatedBucket;
+      });
+      setBuckets(buckets);
+    }
+
+    function addTaskFromCapture() {
+      const text = gElements.qcText.value.trim();
+      if (!text) {
+        return;
+      }
+      const status = gElements.qcStatus.value;
+      const task = {
+        id: Date.now(),
+        text: text.slice(0, 180),
+        category: gElements.qcCategory.value,
+        owner: gElements.qcOwner.value.trim(),
+        due: gElements.qcDue.value,
+        priority: gElements.qcPriority.value,
+        status,
+        done: status === "done",
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+      };
+      const tasks = getTasks();
+      tasks.unshift(task);
+      setTasks(tasks);
+      gElements.qcText.value = "";
+      gElements.qcText.focus();
+    }
+
+    function updateTaskCategory(taskId, categoryId) {
+      const tasks = getTasks().map((task) => {
+        if (task.id !== taskId) {
+          return task;
+        }
+        return {
+          ...task,
+          category: categoryId,
+          updatedAt: Date.now()
+        };
+      });
+      setTasks(tasks);
+    }
+
+    function toggleTaskDone(taskId) {
+      const tasks = getTasks().map((task) => {
+        if (task.id !== taskId) {
+          return task;
+        }
+        const nextDone = !task.done;
+        return {
+          ...task,
+          done: nextDone,
+          status: nextDone ? "done" : (task.status === "done" ? "todo" : task.status),
+          updatedAt: Date.now()
+        };
+      });
+      setTasks(tasks);
+    }
+
+    function removeTask(taskId) {
+      const tasks = getTasks().filter((task) => task.id !== taskId);
+      setTasks(tasks);
+    }
+
+    function openEditModal(taskId) {
+      const task = getTasks().find((item) => item.id === taskId);
+      if (!task) {
+        return;
+      }
+      gEditingTaskId = taskId;
+      gElements.editTaskText.value = task.text;
+      gElements.editTaskCategory.value = task.category;
+      gElements.editTaskOwner.value = task.owner;
+      gElements.editTaskDue.value = task.due;
+      gElements.editTaskPriority.value = task.priority;
+      gElements.editTaskStatus.value = task.status;
+      gElements.editTaskModal.classList.remove("hidden");
+      gElements.editTaskModal.classList.add("flex");
+    }
+
+    function closeEditModal() {
+      gEditingTaskId = null;
+      gElements.editTaskModal.classList.add("hidden");
+      gElements.editTaskModal.classList.remove("flex");
+    }
+
+    function saveEditTask() {
+      if (!gEditingTaskId) {
+        return;
+      }
+      const tasks = getTasks().map((task) => {
+        if (task.id !== gEditingTaskId) {
+          return task;
+        }
+        const status = gElements.editTaskStatus.value;
+        return {
+          ...task,
+          text: gElements.editTaskText.value.trim() || task.text,
+          category: gElements.editTaskCategory.value,
+          owner: gElements.editTaskOwner.value.trim(),
+          due: gElements.editTaskDue.value,
+          priority: gElements.editTaskPriority.value,
+          status,
+          done: status === "done",
+          updatedAt: Date.now()
+        };
+      });
+      setTasks(tasks);
+      closeEditModal();
+    }
+
+    function taskMatchesStatus(task) {
+      if (gStatusFilter === "all") {
+        return true;
+      }
+      if (gStatusFilter === "done") {
+        return task.done || task.status === "done";
+      }
+      if (gStatusFilter === "todo") {
+        return !task.done && task.status === "todo";
+      }
+      if (gStatusFilter === "doing") {
+        return !task.done && task.status === "doing";
+      }
+      return true;
+    }
+
+    function getVisibleTasks() {
+      const tasks = getTasks().filter((task) => taskMatchesStatus(task));
+      if (gCurrentCategoryFilter === "all") {
+        return tasks;
+      }
+      return tasks.filter((task) => task.category === gCurrentCategoryFilter);
+    }
+
+    function buildCategoryOptions(selected) {
+      return gCategories
+        .map((category) => `<option value="${category.id}" ${selected === category.id ? "selected" : ""}>${category.title}</option>`)
+        .join("");
+    }
+
+    function getPriorityRank(priority) {
+      if (priority === "high") {
+        return 0;
+      }
+      if (priority === "med") {
+        return 1;
+      }
+      return 2;
+    }
+
+    function getTaskStatusLabel(task) {
+      if (task.done || task.status === "done") {
+        return "done";
+      }
+      if (task.status === "doing") {
+        return "doing";
+      }
+      return "todo";
+    }
+
+    function getStatusPillClass(task) {
+      const label = getTaskStatusLabel(task);
+      if (label === "done") {
+        return "status-pill status-done";
+      }
+      if (label === "doing") {
+        return "status-pill status-doing";
+      }
+      return "status-pill status-todo";
+    }
+
+    function getOwnerInitials(ownerName) {
+      const cleaned = (ownerName || "").trim();
+      if (!cleaned) {
+        return "NA";
+      }
+      const parts = cleaned.split(/\s+/).filter(Boolean);
+      if (parts.length >= 2) {
+        return `${parts[0][0] || ""}${parts[1][0] || ""}`.toUpperCase();
+      }
+      return cleaned.slice(0, 2).toUpperCase();
+    }
+
+    function renderBoardCards(tasks) {
+      gElements.boardPanel.innerHTML = "";
+
+      if (!tasks.length) {
+        gElements.boardPanel.innerHTML = '<div class="text-sm text-slate-500 p-4">No tasks for this filter.</div>';
+        return;
+      }
+
+      tasks.forEach((task) => {
+        const row = document.createElement("div");
+        row.className = "panel p-3 flex items-start gap-3";
+        if (task.done) {
+          row.classList.add("opacity-70");
+        }
+
+        row.innerHTML = `
+          <input type="checkbox" data-action="toggle" data-id="${task.id}" class="mt-1 rounded border-slate-300" ${task.done ? "checked" : ""} />
+          <div class="avatar-chip mt-0.5">${getOwnerInitials(task.owner)}</div>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-medium ${task.done ? "line-through text-slate-500" : "text-slate-800"}">${task.text}</div>
+            <div class="text-xs text-slate-500 mt-1 flex flex-wrap gap-2">
+              <span class="${getStatusPillClass(task)}">${getTaskStatusLabel(task)}</span>
+              <span>${task.priority.toUpperCase()}</span>
+              <span>${gCategories.find((category) => category.id === task.category)?.title || task.category}</span>
+              <span>${task.owner || "No Owner"}</span>
+              <span>${task.due || "No Due"}</span>
+            </div>
+          </div>
+          <div class="flex gap-1">
+            <button data-action="edit" data-id="${task.id}" class="p-1.5 rounded hover:bg-blue-100 text-slate-500 hover:text-blue-600"><i data-lucide="edit-2" class="w-3.5 h-3.5"></i></button>
+            <button data-action="delete" data-id="${task.id}" class="p-1.5 rounded hover:bg-red-100 text-slate-500 hover:text-red-600"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+          </div>
+        `;
+
+        gElements.boardPanel.appendChild(row);
+      });
+    }
+
+    function renderTableView(tasks) {
+      gElements.boardPanel.innerHTML = `
+        <div class="panel overflow-hidden">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-100 border-b border-slate-200 sticky top-0 z-[1]">
+              <tr>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wide">Task</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wide">Category</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wide">Status</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wide">Owner</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wide">Due</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wide">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="workTableBody"></tbody>
+          </table>
+        </div>
+      `;
+
+      const body = document.getElementById("workTableBody");
+      if (!tasks.length) {
+        body.innerHTML = '<tr><td colspan="6" class="px-3 py-8 text-center text-slate-500">No tasks for this filter.</td></tr>';
+        return;
+      }
+
+      tasks.forEach((task) => {
+        const row = document.createElement("tr");
+        row.className = "border-t border-slate-200 hover:bg-slate-50 transition";
+        row.innerHTML = `
+          <td class="px-4 py-3 align-top">
+            <div class="font-medium text-slate-800 ${task.done ? "line-through text-slate-500" : ""}">${task.text}</div>
+            <div class="text-xs text-slate-500 mt-1">${task.priority.toUpperCase()}</div>
+          </td>
+          <td class="px-4 py-3 text-xs text-slate-600">${task.category}</td>
+          <td class="px-4 py-3"><span class="${getStatusPillClass(task)}">${getTaskStatusLabel(task)}</span></td>
+          <td class="px-4 py-3">
+            <div class="flex items-center gap-2">
+              <span class="avatar-chip">${getOwnerInitials(task.owner)}</span>
+              <span class="text-xs text-slate-600">${task.owner || "No Owner"}</span>
+            </div>
+          </td>
+          <td class="px-4 py-3 text-xs text-slate-600">${task.due || "No Due"}</td>
+          <td class="px-4 py-3">
+            <div class="flex gap-1">
+              <button data-action="edit" data-id="${task.id}" class="p-1.5 rounded hover:bg-blue-100 text-slate-500 hover:text-blue-600"><i data-lucide="edit-2" class="w-3.5 h-3.5"></i></button>
+              <button data-action="delete" data-id="${task.id}" class="p-1.5 rounded hover:bg-red-100 text-slate-500 hover:text-red-600"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+            </div>
+          </td>
+        `;
+        body.appendChild(row);
+      });
+    }
+
+    function renderKanbanView(tasks) {
+      const todo = tasks.filter((task) => !task.done && task.status === "todo");
+      const doing = tasks.filter((task) => !task.done && task.status === "doing");
+      const done = tasks.filter((task) => task.done || task.status === "done");
+
+      gElements.boardPanel.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div class="panel p-3">
+            <h4 class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2">To Do</h4>
+            <div id="kanbanTodo" class="space-y-2"></div>
+          </div>
+          <div class="panel p-3">
+            <h4 class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2">In Progress</h4>
+            <div id="kanbanDoing" class="space-y-2"></div>
+          </div>
+          <div class="panel p-3">
+            <h4 class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2">Done</h4>
+            <div id="kanbanDone" class="space-y-2"></div>
+          </div>
+        </div>
+      `;
+
+      const renderColumn = (containerId, items) => {
+        const container = document.getElementById(containerId);
+        if (!items.length) {
+          container.innerHTML = '<div class="text-xs text-slate-500">No items</div>';
+          return;
+        }
+        items.forEach((task) => {
+          const card = document.createElement("div");
+          card.className = "border border-slate-200 bg-white rounded-lg p-2";
+          card.innerHTML = `
+            <div class="text-sm text-slate-800">${task.text}</div>
+            <div class="mt-2"><span class="${getStatusPillClass(task)}">${getTaskStatusLabel(task)}</span></div>
+            <div class="mt-2 flex items-center gap-2">
+              <span class="avatar-chip">${getOwnerInitials(task.owner)}</span>
+              <span class="text-xs text-slate-500">${task.owner || "No Owner"}</span>
+            </div>
+            <div class="mt-2 flex gap-1">
+              <button data-action="edit" data-id="${task.id}" class="p-1 rounded hover:bg-blue-100 text-slate-500 hover:text-blue-600"><i data-lucide="edit-2" class="w-3 h-3"></i></button>
+              <button data-action="delete" data-id="${task.id}" class="p-1 rounded hover:bg-red-100 text-slate-500 hover:text-red-600"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+      };
+
+      renderColumn("kanbanTodo", todo);
+      renderColumn("kanbanDoing", doing);
+      renderColumn("kanbanDone", done);
+    }
+
+    function renderBoard() {
+      const tasks = getVisibleTasks();
+      if (gWorkView === "table") {
+        renderTableView(tasks);
+        return;
+      }
+      if (gWorkView === "kanban") {
+        renderKanbanView(tasks);
+        return;
+      }
+      renderBoardCards(tasks);
+    }
+
+    function getPeriodStartDate(period) {
+      const now = new Date();
+      if (period === "monthly") {
+        return new Date(now.getFullYear(), now.getMonth(), 1);
+      }
+      const day = now.getDay();
+      const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+      return new Date(now.getFullYear(), now.getMonth(), diff);
+    }
+
+    function renderReport() {
+      const fromDate = getPeriodStartDate(gReportPeriod).getTime();
+      const tasks = getTasks().filter((task) => {
+        const isDone = task.done || task.status === "done";
+        const refDate = task.updatedAt || task.createdAt;
+        return isDone && refDate >= fromDate;
+      });
+
+      const byCategory = gCategories.map((category) => {
+        const items = tasks.filter((task) => task.category === category.id);
+        if (!items.length) {
+          return null;
+        }
+        const lines = items.map((task) => `- ${task.text}${task.owner ? ` (Owner: ${task.owner})` : ""}`);
+        return `${category.title}\n${lines.join("\n")}`;
+      }).filter(Boolean);
+
+      const title = gReportPeriod === "monthly" ? "Monthly" : "Weekly";
+      const report = [
+        `${title} Management Report`,
+        `Generated: ${new Date().toLocaleDateString()}`,
+        `Completed Tasks: ${tasks.length}`,
+        "",
+        ...(byCategory.length ? byCategory : ["No completed tasks in this period."])
+      ].join("\n\n");
+
+      gElements.reportOutput.value = report;
+    }
+
+    function renderInbox() {
+      const inboxTasks = getTasks().filter((task) => task.category === "inbox" && taskMatchesStatus(task));
+      gElements.inboxCount.textContent = String(inboxTasks.length);
+      gElements.inboxList.innerHTML = "";
+
+      if (!inboxTasks.length) {
+        gElements.inboxList.innerHTML = '<div class="text-sm text-slate-500">Inbox empty.</div>';
+        return;
+      }
+
+      inboxTasks.forEach((task) => {
+        const row = document.createElement("div");
+        row.className = "panel p-3 flex items-center justify-between";
+        row.innerHTML = `
+          <div>
+            <div class="text-sm text-slate-800">${task.text}</div>
+            <div class="mt-1"><span class="${getStatusPillClass(task)}">${getTaskStatusLabel(task)}</span></div>
+          </div>
+          <div class="flex gap-1">
+            <button data-action="edit" data-id="${task.id}" class="p-1.5 rounded hover:bg-blue-100 text-slate-500 hover:text-blue-600"><i data-lucide="edit-2" class="w-3.5 h-3.5"></i></button>
+            <button data-action="delete" data-id="${task.id}" class="p-1.5 rounded hover:bg-red-100 text-slate-500 hover:text-red-600"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+          </div>
+        `;
+        gElements.inboxList.appendChild(row);
+      });
+    }
+
+    function renderBuckets() {
+      const buckets = getBuckets();
+      const bucketRows = buckets.map((bucket) => {
+        const updatedOn = bucket.lastUpdatedAt
+          ? new Date(bucket.lastUpdatedAt).toLocaleDateString()
+          : "No update yet";
+        return `
+          <div class="panel p-3">
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <div>
+                <p class="text-sm font-semibold text-slate-900">${bucket.title}</p>
+                <p class="text-xs text-slate-500 mt-1">Owner: ${bucket.owner} • Updated: ${updatedOn}</p>
+              </div>
+            </div>
+            <textarea data-bucket-id="${bucket.id}" data-bucket-field="weeklyUpdate" class="bucket-input mt-2 w-full h-24 border border-slate-200 rounded-lg p-2 text-sm bg-white" placeholder="Add weekly update...">${bucket.weeklyUpdate || ""}</textarea>
+          </div>
+        `;
+      }).join("");
+
+      gElements.bucketsPanel.innerHTML = `
+        <div class="panel p-3">
+          <h3 class="text-sm font-semibold text-slate-900">Add New Bucket</h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2">
+            <input id="bucketTitleInput" type="text" placeholder="Bucket name" class="border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white" />
+            <input id="bucketOwnerInput" type="text" placeholder="Owner" class="border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white" />
+            <button id="addBucketBtn" class="px-3 py-2 rounded-lg text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700">Add Bucket</button>
+          </div>
+        </div>
+        <div class="space-y-3">${bucketRows}</div>
+      `;
+    }
+
+    function renderAdhdSystem() {
+      const tasks = getTasks();
+      const inboxCount = tasks.filter((task) => task.category === "inbox" && !task.done && task.status !== "done").length;
+      const doingCount = tasks.filter((task) => !task.done && task.status === "doing").length;
+      const nowCount = tasks.filter((task) => !task.done && task.status !== "done" && task.category === "today").length;
+      const nextCount = tasks.filter((task) => !task.done && task.status !== "done" && task.category === "week").length;
+      const laterCount = tasks.filter((task) => !task.done && task.status !== "done" && task.category === "next").length;
+      const doneTodayCount = tasks.filter((task) => {
+        const isDone = task.done || task.status === "done";
+        if (!isDone) {
+          return false;
+        }
+        const doneDate = new Date(task.updatedAt || task.createdAt).toDateString();
+        return doneDate === new Date().toDateString();
+      }).length;
+
+      const focusQueue = tasks
+        .filter((task) => !task.done && task.status !== "done")
+        .sort((leftTask, rightTask) => {
+          const priorityDifference = getPriorityRank(leftTask.priority) - getPriorityRank(rightTask.priority);
+          if (priorityDifference !== 0) {
+            return priorityDifference;
+          }
+          const leftDue = leftTask.due ? new Date(leftTask.due).getTime() : Number.MAX_SAFE_INTEGER;
+          const rightDue = rightTask.due ? new Date(rightTask.due).getTime() : Number.MAX_SAFE_INTEGER;
+          if (leftDue !== rightDue) {
+            return leftDue - rightDue;
+          }
+          return (rightTask.updatedAt || rightTask.createdAt) - (leftTask.updatedAt || leftTask.createdAt);
+        })
+        .slice(0, 5);
+
+      if (gFocusLockEnabled && focusQueue.length) {
+        const lockedTask = focusQueue.find((task) => task.id === gFocusLockTaskId) || focusQueue[0];
+        gFocusLockTaskId = lockedTask.id;
+      }
+
+      if (!focusQueue.length) {
+        gFocusLockTaskId = null;
+      }
+
+      const delegationQueue = tasks
+        .filter((task) => !task.done && task.status !== "done" && task.owner)
+        .slice(0, 5);
+
+      const focusHtml = focusQueue.length
+        ? (gFocusLockEnabled
+          ? focusQueue
+              .filter((task) => task.id === gFocusLockTaskId)
+              .map((task) => `
+            <div class="panel p-3 border-2 border-blue-300">
+              <p class="text-xs uppercase tracking-wide text-blue-700 font-semibold">Locked Focus</p>
+              <p class="text-sm font-medium text-slate-800 mt-1">${task.text}</p>
+              <p class="text-xs text-slate-500 mt-1">Priority: ${task.priority.toUpperCase()}${task.due ? ` • Due: ${task.due}` : ""}</p>
+              <div class="mt-2 flex flex-wrap gap-2">
+                <button data-action="focus-unlock" class="px-2 py-1.5 rounded-md text-xs font-semibold border border-slate-200 text-slate-700 hover:bg-slate-100">Unlock</button>
+                <button data-action="triage-now" data-id="${task.id}" class="px-2 py-1.5 rounded-md text-xs font-semibold bg-emerald-100 text-emerald-700 hover:bg-emerald-200">Now</button>
+                <button data-action="triage-next" data-id="${task.id}" class="px-2 py-1.5 rounded-md text-xs font-semibold bg-amber-100 text-amber-700 hover:bg-amber-200">Next</button>
+                <button data-action="triage-later" data-id="${task.id}" class="px-2 py-1.5 rounded-md text-xs font-semibold bg-slate-200 text-slate-700 hover:bg-slate-300">Later</button>
+                <button data-action="apply-delegate" data-id="${task.id}" class="px-2 py-1.5 rounded-md text-xs font-semibold bg-indigo-100 text-indigo-700 hover:bg-indigo-200">Delegate</button>
+              </div>
+            </div>
+          `).join("")
+          : focusQueue.map((task) => `
+            <div class="panel p-3 flex items-center justify-between gap-2">
+              <div>
+                <p class="text-sm font-medium text-slate-800">${task.text}</p>
+                <p class="text-xs text-slate-500 mt-1">Priority: ${task.priority.toUpperCase()}${task.due ? ` • Due: ${task.due}` : ""}</p>
+              </div>
+              <div class="flex flex-wrap justify-end gap-1">
+                <button data-action="focus-start" data-id="${task.id}" class="px-2 py-1.5 rounded-md text-xs font-semibold bg-blue-100 text-blue-700 hover:bg-blue-200">Start</button>
+                <button data-action="focus-lock" data-id="${task.id}" class="px-2 py-1.5 rounded-md text-xs font-semibold border border-blue-200 text-blue-700 hover:bg-blue-50">Lock</button>
+                <button data-action="triage-now" data-id="${task.id}" class="px-2 py-1.5 rounded-md text-xs font-semibold bg-emerald-100 text-emerald-700 hover:bg-emerald-200">Now</button>
+                <button data-action="triage-next" data-id="${task.id}" class="px-2 py-1.5 rounded-md text-xs font-semibold bg-amber-100 text-amber-700 hover:bg-amber-200">Next</button>
+                <button data-action="triage-later" data-id="${task.id}" class="px-2 py-1.5 rounded-md text-xs font-semibold bg-slate-200 text-slate-700 hover:bg-slate-300">Later</button>
+                <button data-action="apply-delegate" data-id="${task.id}" class="px-2 py-1.5 rounded-md text-xs font-semibold bg-indigo-100 text-indigo-700 hover:bg-indigo-200">Delegate</button>
+              </div>
+            </div>
+          `).join(""))
+        : '<div class="text-sm text-slate-500">No open tasks in focus queue.</div>';
+
+      const delegationHtml = delegationQueue.length
+        ? delegationQueue.map((task) => `
+            <div class="panel p-3 flex items-center justify-between gap-2">
+              <div>
+                <p class="text-sm font-medium text-slate-800">${task.text}</p>
+                <p class="text-xs text-slate-500 mt-1">Owner: ${task.owner}</p>
+              </div>
+              <button data-action="mark-doing" data-id="${task.id}" class="px-2 py-1.5 rounded-md text-xs font-semibold border border-slate-200 text-slate-700 hover:bg-slate-100">Nudge</button>
+            </div>
+          `).join("")
+        : '<div class="text-sm text-slate-500">No delegated open tasks.</div>';
+
+      gElements.adhdPanel.innerHTML = `
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="panel p-3">
+            <p class="text-xs uppercase tracking-wide text-slate-500">Inbox Load</p>
+            <p class="text-2xl font-bold text-slate-900 mt-1">${inboxCount}</p>
+          </div>
+          <div class="panel p-3">
+            <p class="text-xs uppercase tracking-wide text-slate-500">In Progress</p>
+            <p class="text-2xl font-bold text-slate-900 mt-1">${doingCount}</p>
+          </div>
+          <div class="panel p-3">
+            <p class="text-xs uppercase tracking-wide text-slate-500">Done Today</p>
+            <p class="text-2xl font-bold text-slate-900 mt-1">${doneTodayCount}</p>
+          </div>
+        </div>
+
+        <div class="panel p-3">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <h3 class="text-sm font-semibold text-slate-900">Now / Next / Later</h3>
+            <div class="flex items-center gap-2 text-xs">
+              <span class="px-2 py-1 rounded-full bg-emerald-100 text-emerald-700">Now: ${nowCount}</span>
+              <span class="px-2 py-1 rounded-full bg-amber-100 text-amber-700">Next: ${nextCount}</span>
+              <span class="px-2 py-1 rounded-full bg-slate-200 text-slate-700">Later: ${laterCount}</span>
+            </div>
+          </div>
+          <p class="text-xs text-slate-500 mt-1">Use quick triage buttons on focus cards to route work in seconds.</p>
+        </div>
+
+        <div class="panel p-3">
+          <h3 class="text-sm font-semibold text-slate-900">Rapid Brain Dump</h3>
+          <p class="text-xs text-slate-500 mt-1">Add one task per line. New lines are saved to Inbox.</p>
+          <textarea id="adhdDumpInput" class="w-full mt-2 h-28 border border-slate-200 rounded-lg p-2 text-sm bg-white" placeholder="Example:\nReview harness retry logic\nFollow up on release blocker\nDraft sprint leadership summary"></textarea>
+          <div class="mt-2 flex justify-end">
+            <button id="adhdDumpAddBtn" class="px-3 py-2 rounded-lg text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700">Add Lines To Inbox</button>
+          </div>
+        </div>
+
+        <div class="panel p-3">
+          <h3 class="text-sm font-semibold text-slate-900">Delegation Template</h3>
+          <p class="text-xs text-slate-500 mt-1">Set defaults once, then use Delegate on any focus task.</p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2">
+            <input id="adhdDelegateOwner" type="text" value="${gDelegateTemplateOwner}" placeholder="Owner name" class="border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white" />
+            <input id="adhdDelegateDue" type="date" value="${gDelegateTemplateDue}" class="border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white" />
+            <button id="adhdTemplateSaveBtn" class="px-3 py-2 rounded-lg text-xs font-semibold border border-slate-200 text-slate-700 hover:bg-slate-100">Save Template</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+          <div>
+            <div class="flex items-center justify-between mb-2 gap-2">
+              <h3 class="text-sm font-semibold text-slate-900">Focus Queue (Top 5)</h3>
+              <button data-action="focus-toggle" class="px-2 py-1.5 rounded-md text-xs font-semibold border ${gFocusLockEnabled ? "border-blue-300 text-blue-700 bg-blue-50" : "border-slate-200 text-slate-700 hover:bg-slate-100"}">${gFocusLockEnabled ? "Focus Lock On" : "Focus Lock Off"}</button>
+            </div>
+            <div class="space-y-2">${focusHtml}</div>
+          </div>
+          <div>
+            <h3 class="text-sm font-semibold text-slate-900 mb-2">Delegation Queue</h3>
+            <div class="space-y-2">${delegationHtml}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function addAdhdDumpLines() {
+      const input = document.getElementById("adhdDumpInput");
+      if (!input) {
+        return;
+      }
+      const lines = input.value
+        .split("\n")
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0);
+
+      if (!lines.length) {
+        return;
+      }
+
+      const baseTime = Date.now();
+      const newTasks = lines.map((line, index) => ({
+        id: baseTime + index,
+        text: line.slice(0, 180),
+        category: "inbox",
+        owner: "",
+        due: "",
+        priority: "med",
+        status: "todo",
+        done: false,
+        createdAt: baseTime + index,
+        updatedAt: baseTime + index
+      }));
+
+      const tasks = getTasks();
+      setTasks([...newTasks, ...tasks]);
+      input.value = "";
+    }
+
+    function setTaskStatus(taskId, status) {
+      const tasks = getTasks().map((task) => {
+        if (task.id !== taskId) {
+          return task;
+        }
+        return {
+          ...task,
+          status,
+          done: status === "done",
+          updatedAt: Date.now()
+        };
+      });
+      setTasks(tasks);
+    }
+
+    function setFocusLock(taskId) {
+      const tasks = getTasks().map((task) => {
+        if (task.done || task.status === "done") {
+          return task;
+        }
+        if (task.id === taskId) {
+          return {
+            ...task,
+            status: "doing",
+            done: false,
+            updatedAt: Date.now()
+          };
+        }
+        if (task.status === "doing") {
+          return {
+            ...task,
+            status: "todo",
+            done: false,
+            updatedAt: Date.now()
+          };
+        }
+        return task;
+      });
+
+      gFocusLockEnabled = true;
+      gFocusLockTaskId = taskId;
+      setTasks(tasks);
+    }
+
+    function clearFocusLock() {
+      gFocusLockEnabled = false;
+      gFocusLockTaskId = null;
+      render();
+    }
+
+    function setTaskCategory(taskId, category) {
+      const tasks = getTasks().map((task) => {
+        if (task.id !== taskId) {
+          return task;
+        }
+        return {
+          ...task,
+          category,
+          updatedAt: Date.now()
+        };
+      });
+      setTasks(tasks);
+    }
+
+    function applyDelegationTemplate(taskId) {
+      const ownerInput = document.getElementById("adhdDelegateOwner");
+      const dueInput = document.getElementById("adhdDelegateDue");
+      const ownerValue = ownerInput ? ownerInput.value.trim() : gDelegateTemplateOwner;
+      const dueValue = dueInput ? dueInput.value : gDelegateTemplateDue;
+
+      gDelegateTemplateOwner = ownerValue;
+      gDelegateTemplateDue = dueValue;
+
+      const tasks = getTasks().map((task) => {
+        if (task.id !== taskId) {
+          return task;
+        }
+        return {
+          ...task,
+          owner: ownerValue,
+          due: dueValue,
+          status: "doing",
+          done: false,
+          updatedAt: Date.now()
+        };
+      });
+      setTasks(tasks);
+    }
+
+    function updateMiniStats() {
+      const tasks = getTasks();
+      const done = tasks.filter((task) => task.done || task.status === "done").length;
+      const open = tasks.length - done;
+      const total = tasks.length || 1;
+      const doneDeg = Math.round((done / total) * 360);
+      const openDeg = Math.round((open / total) * 360);
+
+      gElements.openRing.style.setProperty("--deg", `${openDeg}deg`);
+      gElements.doneRing.style.setProperty("--deg", `${doneDeg}deg`);
+      gElements.openRingLabel.textContent = String(open);
+      gElements.doneRingLabel.textContent = String(done);
+    }
+
+    function renderSidebar() {
+      gElements.sidebarNav.querySelectorAll(".nav-btn").forEach((btn) => {
+        const active = btn.dataset.panel === gCurrentPanel;
+        btn.classList.toggle("bg-blue-100", active);
+        btn.classList.toggle("text-blue-700", active);
+        btn.classList.toggle("text-slate-700", !active);
+        btn.classList.toggle("hover:bg-slate-100", !active);
+      });
+    }
+
+    function renderStatusTabs() {
+      gElements.statusTabs.querySelectorAll(".status-btn").forEach((btn) => {
+        const active = btn.dataset.status === gStatusFilter;
+        btn.classList.toggle("bg-blue-100", active);
+        btn.classList.toggle("text-blue-700", active);
+        btn.classList.toggle("text-slate-600", !active);
+      });
+    }
+
+    function renderWorkViewTabs() {
+      gElements.workViewTabs.querySelectorAll(".work-view-btn").forEach((btn) => {
+        const active = btn.dataset.workView === gWorkView;
+        btn.classList.toggle("bg-blue-100", active);
+        btn.classList.toggle("text-blue-700", active);
+        btn.classList.toggle("text-slate-600", !active);
+      });
+    }
+
+    function setPanel(panel) {
+      gCurrentPanel = panel;
+      gElements.boardPanel.classList.toggle("hidden", panel !== "board");
+      gElements.bucketsPanel.classList.toggle("hidden", panel !== "buckets");
+      gElements.adhdPanel.classList.toggle("hidden", panel !== "adhd");
+      gElements.reportPanel.classList.toggle("hidden", panel !== "report");
+      gElements.inboxPanel.classList.toggle("hidden", panel !== "inbox");
+      gElements.workViewTabs.classList.toggle("hidden", panel !== "board");
+
+      if (panel === "board") {
+        gElements.sectionTitle.textContent = "Workboard";
+      }
+      if (panel === "buckets") {
+        gElements.sectionTitle.textContent = "Weekly Buckets";
+      }
+      if (panel === "adhd") {
+        gElements.sectionTitle.textContent = "ADHD System";
+      }
+      if (panel === "report") {
+        gElements.sectionTitle.textContent = "Weekly / Monthly Report";
+      }
+      if (panel === "inbox") {
+        gElements.sectionTitle.textContent = "Inbox";
+      }
+    }
+
+    function setColorMode(mode) {
+      if (mode === "dark") {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+      setStore("flowColorMode", mode);
+    }
+
+    function downloadCsv() {
+      const tasks = getVisibleTasks();
+      const header = ["Task", "Category", "Status", "Priority", "Owner", "Due"];
+      const rows = tasks.map((task) => [
+        task.text,
+        task.category,
+        task.status,
+        task.priority,
+        task.owner,
+        task.due
+      ]);
+
+      const csv = [header, ...rows]
+        .map((row) => row.map((value) => {
+          const text = String(value || "");
+          return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+        }).join(","))
+        .join("\n");
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `workboard-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+
+    function render() {
+      renderSidebar();
+      renderStatusTabs();
+      renderWorkViewTabs();
+      updateMiniStats();
+      setPanel(gCurrentPanel);
+      renderBoard();
+      renderBuckets();
+      renderAdhdSystem();
+      renderReport();
+      renderInbox();
+      lucide.createIcons();
+    }
+
+    function initCategorySelects() {
+      const options = gCategories
+        .map((category) => `<option value="${category.id}">${category.title}</option>`)
+        .join("");
+      gElements.qcCategory.innerHTML = options;
+      gElements.editTaskCategory.innerHTML = options;
+      gElements.qcCategory.value = "inbox";
+    }
+
+    gElements.sidebarNav.addEventListener("click", (event) => {
+      const button = event.target.closest(".nav-btn");
+      if (!button) {
+        return;
+      }
+      setPanel(button.dataset.panel);
+      render();
+    });
+
+    gElements.statusTabs.addEventListener("click", (event) => {
+      const button = event.target.closest(".status-btn");
+      if (!button) {
+        return;
+      }
+      gStatusFilter = button.dataset.status;
+      render();
+    });
+
+    gElements.workViewTabs.addEventListener("click", (event) => {
+      const button = event.target.closest(".work-view-btn");
+      if (!button) {
+        return;
+      }
+      gWorkView = button.dataset.workView;
+      render();
+    });
+
+    gElements.qcAddBtn.addEventListener("click", addTaskFromCapture);
+    gElements.qcText.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        addTaskFromCapture();
+      }
+    });
+
+    gElements.qcToggleBtn.addEventListener("click", () => {
+      const isHidden = gElements.qcDetails.classList.toggle("hidden");
+      gElements.qcToggleBtn.textContent = isHidden ? "More Details" : "Less Details";
+    });
+
+    gElements.boardPanel.addEventListener("click", (event) => {
+      const target = event.target.closest("[data-action]");
+      if (!target) {
+        return;
+      }
+      const taskId = Number(target.dataset.id);
+      const action = target.dataset.action;
+      if (action === "toggle") {
+        toggleTaskDone(taskId);
+      }
+      if (action === "edit") {
+        openEditModal(taskId);
+      }
+      if (action === "delete") {
+        removeTask(taskId);
+      }
+    });
+
+    gElements.inboxPanel.addEventListener("click", (event) => {
+      const target = event.target.closest("[data-action]");
+      if (!target) {
+        return;
+      }
+      const taskId = Number(target.dataset.id);
+      if (target.dataset.action === "edit") {
+        openEditModal(taskId);
+      }
+      if (target.dataset.action === "delete") {
+        removeTask(taskId);
+      }
+    });
+
+    gElements.bucketsPanel.addEventListener("click", (event) => {
+      const addButton = event.target.closest("#addBucketBtn");
+      if (!addButton) {
+        return;
+      }
+
+      const titleInput = document.getElementById("bucketTitleInput");
+      const ownerInput = document.getElementById("bucketOwnerInput");
+      const bucketTitle = titleInput ? titleInput.value : "";
+      const bucketOwner = ownerInput ? ownerInput.value : "";
+      addBucket(bucketTitle, bucketOwner);
+
+      if (titleInput) {
+        titleInput.value = "";
+      }
+      if (ownerInput) {
+        ownerInput.value = "";
+      }
+    });
+
+    gElements.bucketsPanel.addEventListener("change", (event) => {
+      const input = event.target.closest(".bucket-input");
+      if (!input) {
+        return;
+      }
+      const bucketId = Number(input.dataset.bucketId);
+      const fieldName = input.dataset.bucketField;
+      if (!bucketId || !fieldName) {
+        return;
+      }
+      updateBucketField(bucketId, fieldName, input.value);
+    });
+
+    gElements.adhdPanel.addEventListener("click", (event) => {
+      const button = event.target.closest("button");
+      if (!button) {
+        return;
+      }
+
+      if (button.id === "adhdDumpAddBtn") {
+        addAdhdDumpLines();
+        return;
+      }
+
+       if (button.id === "adhdTemplateSaveBtn") {
+        const ownerInput = document.getElementById("adhdDelegateOwner");
+        const dueInput = document.getElementById("adhdDelegateDue");
+        gDelegateTemplateOwner = ownerInput ? ownerInput.value.trim() : "";
+        gDelegateTemplateDue = dueInput ? dueInput.value : "";
+        renderAdhdSystem();
+        return;
+      }
+
+      if (button.dataset.action === "focus-toggle") {
+        if (gFocusLockEnabled) {
+          clearFocusLock();
+          return;
+        }
+        const openTask = getTasks().find((task) => !task.done && task.status !== "done");
+        if (openTask) {
+          setFocusLock(openTask.id);
+        }
+        return;
+      }
+
+      if (button.dataset.action === "focus-unlock") {
+        clearFocusLock();
+        return;
+      }
+
+      const action = button.dataset.action;
+      const taskId = Number(button.dataset.id);
+      if (!taskId || !action) {
+        return;
+      }
+
+      if (action === "focus-start") {
+        setTaskStatus(taskId, "doing");
+      }
+      if (action === "focus-lock") {
+        setFocusLock(taskId);
+      }
+      if (action === "mark-doing") {
+        setTaskStatus(taskId, "doing");
+      }
+      if (action === "triage-now") {
+        setTaskCategory(taskId, "today");
+      }
+      if (action === "triage-next") {
+        setTaskCategory(taskId, "week");
+      }
+      if (action === "triage-later") {
+        setTaskCategory(taskId, "next");
+      }
+      if (action === "apply-delegate") {
+        applyDelegationTemplate(taskId);
+      }
+    });
+
+    document.querySelectorAll(".report-period").forEach((button) => {
+      button.addEventListener("click", () => {
+        gReportPeriod = button.dataset.period;
+        document.querySelectorAll(".report-period").forEach((item) => {
+          const active = item.dataset.period === gReportPeriod;
+          item.classList.toggle("bg-blue-100", active);
+          item.classList.toggle("text-blue-700", active);
+          item.classList.toggle("text-slate-700", !active);
+        });
+        renderReport();
+      });
+    });
+
+    gElements.copyReportBtn.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(gElements.reportOutput.value);
+      } catch (error) {
+        console.warn("Clipboard error", error);
+      }
+    });
+
+    gElements.editTaskCancel.addEventListener("click", closeEditModal);
+    gElements.editTaskSave.addEventListener("click", saveEditTask);
+
+    gElements.lightModeBtn.addEventListener("click", () => setColorMode("light"));
+    gElements.darkModeBtn.addEventListener("click", () => setColorMode("dark"));
+    gElements.downloadCsvBtn.addEventListener("click", downloadCsv);
+
+    gElements.todayLabel.textContent = new Date().toLocaleDateString(undefined, {
+      weekday: "long",
+      month: "short",
+      day: "numeric"
+    });
+
+    initCategorySelects();
+    initBucketsIfNeeded();
+    setColorMode(getStore("flowColorMode", "light"));
+    render();
+    setTimeout(() => lucide.createIcons(), 50);
+  </script>
+</body>
+</html>
